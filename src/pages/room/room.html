@@ -1,0 +1,77 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>
+      Room {{ title }}
+    </ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content >
+  <!--Whiteboard Canvas-->
+  
+    <ion-item> 
+      <canvas mycanvas [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
+    </ion-item>
+ 
+  
+  <ion-list>
+    <ion-item>
+      <ion-label>Draw Mode</ion-label>
+      <ion-select [(ngModel)]="DrawMode" (ngModelChange)="dmode = $event" cancelText="Cancel" okText="Okay">
+        <ion-option value="l">Draw</ion-option>
+        <ion-option value="e">Erase</ion-option>            
+      </ion-select>
+    </ion-item>
+  </ion-list>
+  <ion-list>
+    <ion-item>
+      <ion-label>Draw Size</ion-label>
+      <ion-select [(ngModel)]="DrawSize" (ngModelChange)="dsize = $event" cancelText="Cancel" okText="Okay">
+        <ion-option value="2">Small</ion-option>
+        <ion-option value="5">Medium</ion-option>
+        <ion-option value="8">Large</ion-option>     
+      </ion-select>
+    </ion-item>
+  </ion-list>
+  <ion-list>
+    <ion-item>
+      <ion-label>Draw Color</ion-label>
+      <ion-select [(ngModel)]="DrawColor" (ngModelChange)="dcolor = $event" cancelText="Cancel" okText="Okay">
+        <ion-option value="#161515">Black</ion-option>
+        <ion-option value="#57646B">Grey</ion-option>
+        <ion-option value="#fff">White</ion-option>
+        <ion-option value="#D01B1B">Red</ion-option>
+        <ion-option value="#1DB73C">Green</ion-option>
+        <ion-option value="#2094D7">Blue</ion-option>             
+      </ion-select>
+    </ion-item>
+  </ion-list>
+  <ion-item>
+    <button ion-button color="light" (click)="onClickClear()" block>Clear</button>
+  </ion-item>
+  <!--WC-->
+  <ion-list inset>
+    <ion-item>  
+      <button ion-button (click)="onClickLobby()"  color="dark">Lobby</button>
+    </ion-item>    
+  </ion-list>
+  
+  <ion-list inset>
+
+    <ion-item>
+      <ion-label floating>Message</ion-label>
+      <ion-input type="text" [(ngModel)]="inputMessage"></ion-input>
+    </ion-item>
+    <ion-item>
+      <button ion-button (click)="onSendMessage(inputMessage)" color="primary" block >Send</button>
+    </ion-item>
+    
+    <ion-list class="chatbox" angular2-auto-scroll lock-y-offset="10" observe-attributes>
+      <ion-item *ngFor="let msg of listMessage[0].messages " ><b>{{msg.name}} </b>{{ msg.message }}</ion-item>
+    </ion-list>
+    
+  </ion-list>
+
+
+  
+</ion-content>
