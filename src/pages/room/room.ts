@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { NavController, Events } from 'ionic-angular';
 import * as x from '../../providers/videocenter';
 import { LobbyPage } from '../lobby/lobby';
