@@ -103,11 +103,13 @@ export class MycanvasDirective {
             e_posy += obj.offsetTop;
         } while ( obj = obj.offsetParent);
     }
+    let scrollContent = document.getElementsByClassName('scroll-content');
+    let scrollContentX = scrollContent[0].scrollLeft;
+    let scrollContentY = scrollContent[0].scrollTop;
     let x : number = m_posx-e_posx;
     let y : number = m_posy-e_posy;
-    this.mouse.pos.x = x;
-    this.mouse.pos.y = y;
-
+    this.mouse.pos.x = x+scrollContentX;
+    this.mouse.pos.y = y+scrollContentY;
     if ( this.mouse.pos_prev.x == -12345 ) {
         this.mouse.pos_prev.x = this.mouse.pos.x;
         this.mouse.pos_prev.y = this.mouse.pos.y;
