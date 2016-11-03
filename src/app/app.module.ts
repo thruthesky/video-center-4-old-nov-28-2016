@@ -7,7 +7,7 @@ import { RoomPage } from '../pages/room/room';
 import { Videocenter } from '../providers/videocenter';
 import { MycanvasDirective } from '../components/mycanvas/mycanvas';
 import { Storage } from '@ionic/storage';
-import {Angular2AutoScroll} from "angular2-auto-scroll/lib/angular2-auto-scroll.directive";
+import { Angular2AutoScroll } from "angular2-auto-scroll/lib/angular2-auto-scroll.directive";
 
 
 @NgModule({
