@@ -5,5 +5,18 @@ page-lobby {
         height: 140px;
         overflow: hidden;
         overflow-y: scroll;        
-    }   
+    }
+}
+
+
+section#room-list {
+    h2 {
+        color: #595959;
+    }
+    h3 {
+        padding: .2em .4em;
+        background-color:#f0f0f0;
+        color: blue;
+        font-size: 1.6em;
+    }
 }

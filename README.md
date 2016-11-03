@@ -2,6 +2,7 @@
 # TODO List
 
     * on update username, Server must returen error when the username is already occupied by other user.
+    * Empty room appears when a user logs in.
 
 # Installation
 

@@ -19,18 +19,25 @@
     
   </ion-list>  
   
-  <ion-list>
-    <ion-title>Room and User List</ion-title>
-    <ion-item *ngFor = " let id of roomIds "  >
-      <div (click)="onJoinRoom(rooms[id].name)">{{ rooms[id].name }} </div>      
-      <div class="users">
-        <div class="user" *ngFor = " let user of rooms[id].users " socket=" user.socket">
-          {{ user.name }}
+
+  <section id='room-list'>
+    <h2>Room List</h2>
+    <ion-list no-lines>
+      <ion-item *ngFor = " let id of roomIds "  >
+        <h3 (click)="onJoinRoom(rooms[id].name)">
+          {{ rooms[id].name }}
+        </h3>
+        <div>
+          <span *ngFor = " let user of rooms[id].users " socket=" user.socket">
+            {{ user.name }}
+          </span>
         </div>
-      </div>
-      
-    </ion-item>
-  </ion-list>
+      </ion-item>
+    </ion-list>
+  </section>
+
+
+
 
   <ion-list inset>
     
