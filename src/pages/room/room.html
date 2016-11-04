@@ -9,7 +9,12 @@
 
 <ion-content >
   <!--Whiteboard Canvas-->
-  
+   
+    <div class="users" layout="overlap">
+      <div class="user"><img src="x-assets/1.png"></div>
+      <div class="user"><img src="x-assets/2.png"></div>
+                              
+    </div>
       <div class="container">
         <canvas mycanvas [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
         <button ion-button color="dark" (click)="onClickClear()" id="clear">

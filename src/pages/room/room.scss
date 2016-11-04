@@ -13,6 +13,15 @@ page-room {
         position: relative;
         display: inline-block
     }
+    .users {
+        position:relative;
+    }
+    .user {
+        position: relative;
+        display: inline-block;
+        width: 50%;
+        float: left;
+    }
     
     #ion-draw-size {
         position: absolute;
@@ -39,7 +48,7 @@ page-room {
         position: absolute;
         width: 25px;
         height: 30px;
-        z-index: 5px;
+        z-index: 100px;
         top:0;
         right: 60px;
     }
@@ -47,7 +56,7 @@ page-room {
         position: absolute;
         width: 25px;
         height: 30px;
-        z-index: 5px;
+        z-index: 100px;
         top:0;
         right: 90px;
     }
@@ -55,12 +64,15 @@ page-room {
         position: absolute;
         width: 25px;
         height: 30px;
-        z-index: 5px;
+        z-index: 100px;
         top:0;
         right: 120px;
     }
     .ion-icons {
         font-size:30px;
+        z-index: 100px;
+    }
+    ion-buttons {
         z-index: 100px;
     }
     .select-text {
