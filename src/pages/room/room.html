@@ -2,6 +2,7 @@
   <ion-navbar>
     <ion-title>
       Room {{ title }}
+       <button ion-button (click)="onClickLobby()"  color="dark">Lobby</button>
     </ion-title>
   </ion-navbar>
 </ion-header>
@@ -9,52 +10,45 @@
 <ion-content >
   <!--Whiteboard Canvas-->
   
-    <ion-item> 
-      <canvas mycanvas [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
-    </ion-item>
- 
-  
-  <ion-list>
-    <ion-item>
-      <ion-label>Draw Mode</ion-label>
-      <ion-select [(ngModel)]="DrawMode" (ngModelChange)="dmode = $event" cancelText="Cancel" okText="Okay">
-        <ion-option value="l">Draw</ion-option>
-        <ion-option value="e">Erase</ion-option>            
-      </ion-select>
-    </ion-item>
-  </ion-list>
-  <ion-list>
-    <ion-item>
-      <ion-label>Draw Size</ion-label>
-      <ion-select [(ngModel)]="DrawSize" (ngModelChange)="dsize = $event" cancelText="Cancel" okText="Okay">
-        <ion-option value="2">Small</ion-option>
-        <ion-option value="5">Medium</ion-option>
-        <ion-option value="8">Large</ion-option>     
-      </ion-select>
-    </ion-item>
-  </ion-list>
-  <ion-list>
-    <ion-item>
-      <ion-label>Draw Color</ion-label>
-      <ion-select [(ngModel)]="DrawColor" (ngModelChange)="dcolor = $event" cancelText="Cancel" okText="Okay">
-        <ion-option value="#161515">Black</ion-option>
-        <ion-option value="#57646B">Grey</ion-option>
-        <ion-option value="#fff">White</ion-option>
-        <ion-option value="#D01B1B">Red</ion-option>
-        <ion-option value="#1DB73C">Green</ion-option>
-        <ion-option value="#2094D7">Blue</ion-option>             
-      </ion-select>
-    </ion-item>
-  </ion-list>
-  <ion-item>
-    <button ion-button color="light" (click)="onClickClear()" block>Clear</button>
-  </ion-item>
+      <div class="container">
+        <canvas mycanvas [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
+        <button ion-button color="dark" (click)="onClickClear()" id="clear">
+          <ion-icon name="md-square-outline" class="ion-icons">
+          </ion-icon>
+        </button>
+        <ion-buttons color="dark" id="ion-draw-color">
+          <ion-icon name="md-color-palette" class="ion-icons">
+            <ion-select [(ngModel)]="DrawColor" (ngModelChange)="dcolor = $event" cancelText="Cancel" okText="Okay">
+              <ion-option value="#161515">Black</ion-option>
+              <ion-option value="#57646B">Grey</ion-option>
+              <ion-option value="#fff">White</ion-option>
+              <ion-option value="#D01B1B">Red</ion-option>
+              <ion-option value="#1DB73C">Green</ion-option>
+              <ion-option value="#2094D7">Blue</ion-option>             
+            </ion-select>
+          </ion-icon>
+        </ion-buttons>
+        <ion-buttons  id="ion-draw-size">
+          <ion-icon name="md-options" class="ion-icons">
+            <ion-select [(ngModel)]="DrawSize" (ngModelChange)="dsize = $event" cancelText="Cancel" okText="Okay">
+              <ion-option value="2">Small</ion-option>
+              <ion-option value="5">Medium</ion-option>
+              <ion-option value="8">Large</ion-option>     
+            </ion-select>
+          </ion-icon>
+        </ion-buttons>
+
+        <button ion-button color="dark" (click)="eraseMode()" id="ion-erase">
+          <ion-icon name="ios-hand" class="ion-icons">
+          </ion-icon>
+        </button> 
+        <button ion-button color="dark" (click)="drawMode()" id="ion-draw">
+          <ion-icon name="ios-brush" class="ion-icons">
+          </ion-icon>
+        </button>  
+      </div>
   <!--WC-->
-  <ion-list inset>
-    <ion-item>  
-      <button ion-button (click)="onClickLobby()"  color="dark">Lobby</button>
-    </ion-item>    
-  </ion-list>
+
   
   <ion-list inset>
 

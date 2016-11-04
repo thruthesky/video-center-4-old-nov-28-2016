@@ -70,5 +70,11 @@ export class RoomPage {
   onClickClear() {
     this.events.publish( 'click-clear-canvas' );
   } 
+  drawMode() {
+    this.dmode = "l";
+  } 
+  eraseMode() {
+    this.dmode = "e";
+  }
  
 }
