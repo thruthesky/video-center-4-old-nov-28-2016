@@ -106,7 +106,7 @@ export class LobbyPage {
       let user: x.USER = users[socket_id];
       if(!user.room) continue;
       let room_id = <string> this.vc.md5( user.room );   
-      if ( this.rooms[ room_id ] === void 0 ) this.rooms[ room_id ] = { name: user.room, users: [] };      
+      if ( this.rooms[ room_id ] === void 0 ) this.rooms[ room_id ] = { name: user.room, users: [] };
       let usr = this.rooms[ room_id ].users; 
       for(let i in usr) { 
           if( usr[i].socket === user.socket) {
