@@ -6,8 +6,8 @@ import { LobbyPage } from '../pages/lobby/lobby';
 import { RoomPage } from '../pages/room/room';
 import { Videocenter } from '../providers/videocenter';
 import { MycanvasDirective } from '../components/mycanvas/mycanvas';
+import { AutoscrollDirective } from '../components/autoscroll/autoscroll';
 import { Storage } from '@ionic/storage';
-import { Angular2AutoScroll } from "angular2-auto-scroll/lib/angular2-auto-scroll.directive";
 
 
 @NgModule({
@@ -16,8 +16,8 @@ import { Angular2AutoScroll } from "angular2-auto-scroll/lib/angular2-auto-scrol
     EntrancePage,
     LobbyPage,
     RoomPage,
-    Angular2AutoScroll,
-    MycanvasDirective
+    MycanvasDirective,
+    AutoscrollDirective
   ],
   imports: [
     IonicModule.forRoot(MyApp)

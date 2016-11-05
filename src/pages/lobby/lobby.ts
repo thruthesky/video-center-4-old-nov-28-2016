@@ -260,7 +260,8 @@ export class LobbyPage {
   }
    
   addMessage( message ) {     
-    this.listMessage[0].messages.push( message ); 
+    this.listMessage[0].messages.push( message );
+    setTimeout(()=>{ this.events.publish( 'scroll-to-bottom' ); }, 100); 
   }
   joinRoom( roomname ) {  
     this.vc.joinRoom( roomname, re => {

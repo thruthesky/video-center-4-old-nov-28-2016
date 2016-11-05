@@ -24,7 +24,7 @@ export class MycanvasDirective {
       this.drawColor = "#161515";
       this.drawMode = "l";
       this.listenEvents();
-    }
+  }
   //Mouse Event
   @HostListener('mousedown', ['$event'])
   onMouseDown(event) {

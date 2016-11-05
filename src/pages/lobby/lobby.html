@@ -43,7 +43,7 @@
       <ion-input type="text" [(ngModel)]="inputMessage" (keyup.enter)="onSendMessage(inputMessage)"></ion-input>
       <button ion-button item-right (click)="onSendMessage(inputMessage)" color="primary" >Send</button>
     </ion-item>
-    <ion-list class="chatbox" angular2-auto-scroll lock-y-offset="10" observe-attributes>
+    <ion-list class="chatbox" myautoscroll>
       <ion-item *ngFor="let msg of listMessage[0].messages " ><b>{{msg.name}} </b>{{ msg.message }}</ion-item>
     </ion-list>
 
