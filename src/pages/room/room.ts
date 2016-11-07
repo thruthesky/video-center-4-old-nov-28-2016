@@ -20,8 +20,9 @@ export class RoomPage {
   DrawSize;
   DrawColor;
 
-video_url;
-audios = [];
+  video_url;
+  audios = [];
+  videos = [];
   constructor(
     public navCtrl: NavController, 
     private vc: x.Videocenter,
@@ -77,49 +78,50 @@ videos.appendChild( video );
      * @todo Open camera first and change camera...
      */
     connection.DetectRTC.load(() => {
-                connection.DetectRTC.MediaDevices.forEach((device) => {
-                  /*
-                    if(document.getElementById(device.id)) {
-                        return;
-                    }
-                    */
+        connection.DetectRTC.MediaDevices.forEach((device) => {
+          /*
+            if(document.getElementById(device.id)) {
+                return;
+            }
+            */
+            if(device.kind === 'audioinput') {
+                //var option = document.createElement('option');
+                //option.id = device.id;
+                //option.innerHTML = device.label || device.id;
+                //option.value = device.id;
+                //console.log('audio: ', option);
+                //audioDevices.appendChild(option);
+                let audio = {
+                  text: device.label || device.id,
+                  value: device.id
+                };
+                this.audios.push( audio );
+                console.log('audios:',this.audios);
+                // selected audio
+                // if(connection.mediaConstraints.audio.optional.length && connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
+                //     option.selected = true;
+                // }
+            }
 
-                    if(device.kind === 'audioinput') {
-                        //var option = document.createElement('option');
-                        //option.id = device.id;
-                        //option.innerHTML = device.label || device.id;
-                        //option.value = device.id;
-                        //console.log('audio: ', option);
-                        //audioDevices.appendChild(option);
-                        let audio = {
-                          text: device.label || device.id,
-                          value: device.id
-                        };
-                        this.audios.push( audio );
-
-console.log('audios:',this.audios);
-
-
-                        // selected audio
-                        if(connection.mediaConstraints.audio.optional.length && connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
-                            option.selected = true;
-                        }
-                    }
-
-                    if(device.kind.indexOf('video') !== -1) {
-                        var option = document.createElement('option');
-                        option.id = device.id;
-                        option.innerHTML = device.label || device.id;
-                        option.value = device.id;
-                        //videoDevices.appendChild(option);
-                        console.log('video: ', option);
-
-                        if(connection.mediaConstraints.video.optional.length && connection.mediaConstraints.video.optional[0].sourceId === device.id) {
-                            option.selected = true;
-                        }
-                    }
-                });
-            });
+            if(device.kind.indexOf('video') !== -1) {
+                // var option = document.createElement('option');
+                // option.id = device.id;
+                // option.innerHTML = device.label || device.id;
+                // option.value = device.id;
+                //videoDevices.appendChild(option);
+                // console.log('video: ', option);
+                let video = {
+                  text: device.label || device.id,
+                  value: device.id
+                };
+                this.videos.push( video );
+                console.log('audios:',this.videos);
+                // if(connection.mediaConstraints.video.optional.length && connection.mediaConstraints.video.optional[0].sourceId === device.id) {
+                //     option.selected = true;
+                // }
+            }
+        });
+    });
 
 
     //////

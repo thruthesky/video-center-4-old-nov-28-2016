@@ -8,10 +8,71 @@ page-room {
     }
     canvas {
         border:solid 1px black;
+       
     }
     .container {
         position: relative;
-        display: inline-block
+        display: inline-block;
+         #ion-draw-size {
+            position: absolute;
+            width: 25px;
+            height: 30px;
+            z-index: 5px;
+            top: 4px;
+            right: 10px;
+            background-color: #222222;
+            color:white;
+        }
+        #ion-draw-color {
+            position: absolute;
+            width: 25px;
+            height: 30px;
+            z-index: 5px;
+            top: 4px;
+            right: 35px;
+            background-color: #222222;
+            color:white;
+        }
+        
+        #clear {
+            position: absolute;
+            width: 25px;
+            height: 30px;
+            z-index: 100px;
+            top:0;
+            right: 60px;
+        }
+        #ion-erase {
+            position: absolute;
+            width: 25px;
+            height: 30px;
+            z-index: 100px;
+            top:0;
+            right: 90px;
+        }
+        #ion-draw {
+            position: absolute;
+            width: 25px;
+            height: 30px;
+            z-index: 100px;
+            top:0;
+            right: 120px;
+        }
+        .ion-icons {
+            font-size:30px;
+            z-index: 100px;
+        }
+        ion-buttons {
+            z-index: 100px;
+        }
+        .select-text {
+            display:none;
+        }
+        .select-md {
+        padding: 1px 8px 13px 16px;
+        top: 0;
+        position: absolute;
+        }
     }
     .users {
         position:relative;
@@ -23,66 +84,7 @@ page-room {
         float: left;
     }
     
-    #ion-draw-size {
-        position: absolute;
-        width: 25px;
-        height: 30px;
-        z-index: 5px;
-        top: 4px;
-        right: 10px;
-        background-color: #222222;
-        color:white;
-    }
-    #ion-draw-color {
-        position: absolute;
-        width: 25px;
-        height: 30px;
-        z-index: 5px;
-        top: 4px;
-        right: 35px;
-        background-color: #222222;
-        color:white;
-    }
     
-    #clear {
-        position: absolute;
-        width: 25px;
-        height: 30px;
-        z-index: 100px;
-        top:0;
-        right: 60px;
-    }
-    #ion-erase {
-        position: absolute;
-        width: 25px;
-        height: 30px;
-        z-index: 100px;
-        top:0;
-        right: 90px;
-    }
-    #ion-draw {
-        position: absolute;
-        width: 25px;
-        height: 30px;
-        z-index: 100px;
-        top:0;
-        right: 120px;
-    }
-    .ion-icons {
-        font-size:30px;
-        z-index: 100px;
-    }
-    ion-buttons {
-        z-index: 100px;
-    }
-    .select-text {
-        display:none;
-    }
-    .select-md {
-    padding: 1px 8px 13px 16px;
-    top: 0;
-    position: absolute;
-    }
 }
 
 
