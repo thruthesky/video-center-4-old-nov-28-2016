@@ -19,6 +19,8 @@ export class RoomPage {
   DrawMode;
   DrawSize;
   DrawColor;
+
+video_url;
   constructor(
     public navCtrl: NavController, 
     private vc: x.Videocenter,
@@ -32,9 +34,34 @@ export class RoomPage {
         let data :any = { room_name : roomname };
         data.command = "history";
         this.vc.whiteboard( data,() => { console.log("get whiteboard history")} );
+        connection.openOrJoin( roomname );
       });
      
       this.listenEvents();
+
+
+
+
+    let connection = x.Videocenter.connection;
+
+//// connection a room
+connection.onstream = (event) => {
+    //console.log('connection id: ' + connection.userid);
+    //console.log('event id: ' + event.userid);
+    //console.log(connection);
+
+console.log('onstream : ', event);
+let video = event.mediaElement;
+console.log( 'video: ', video);
+
+let videos= document.getElementById('videos');
+videos.appendChild( video );
+
+    ///
+//    roomAddVideo( event );
+
+//    videoLayout( Cookies.get('video-list-style') );
+};
   }
   onClickLobby() {
     this.vc.leaveRoom(()=> {

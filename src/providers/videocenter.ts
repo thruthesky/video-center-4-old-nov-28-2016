@@ -32,8 +32,8 @@ export let mouse: Mouse = {
 import { Storage } from '@ionic/storage';
 @Injectable()
 export class Videocenter {
-    socketUrl: string = "http://localhost:9001/";
-    //socketUrl: string = "http://dev.withcenter.com:9001/";
+    //socketUrl: string = "http://localhost:9001/";
+    socketUrl: string = "https://videocenter.co.kr:9001/";
     static socket:any = false;
     static connection;
   constructor(
@@ -53,6 +53,83 @@ export class Videocenter {
     Videocenter.connection = new RTCMultiConnection();
     Videocenter.connection.socketURL = this.socketUrl;
     this.listen();
+    let connection: any = <any> Videocenter.connection;
+
+
+connection.enableFileSharing = false;
+connection.session = {
+    audio: true,
+    video: true,
+    data : false
+};
+connection.sdpConstraints.mandatory = {
+    OfferToReceiveAudio: true,
+    OfferToReceiveVideo: true
+};
+connection.getExternalIceServers = false;
+connection.iceServers = [];
+connection.iceServers.push({
+    url: 'stun:videocenter.co.kr:3478'
+});
+
+
+
+
+
+/**
+ * @todo username 과 credential 이 틀려도 접속이 된다. 확인을 해 볼 것.
+ */
+connection.iceServers.push({
+    urls: 'turn:videocenter.co.kr:3478',
+    username: 'test_username1',
+    credential: 'test_password1'
+});
+
+
+
+    //////
+
+
+    /**
+     * @todo Open camera first and change camera...
+     */
+    connection.DetectRTC.load(function() {
+                connection.DetectRTC.MediaDevices.forEach(function(device) {
+                    if(document.getElementById(device.id)) {
+                        return;
+                    }
+
+                    if(device.kind === 'audioinput') {
+                        var option = document.createElement('option');
+                        option.id = device.id;
+                        option.innerHTML = device.label || device.id;
+                        option.value = device.id;
+                        console.log(option);
+                        //audioDevices.appendChild(option);
+
+                        if(connection.mediaConstraints.audio.optional.length && connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
+                            option.selected = true;
+                        }
+                    }
+
+                    if(device.kind.indexOf('video') !== -1) {
+                        var option = document.createElement('option');
+                        option.id = device.id;
+                        option.innerHTML = device.label || device.id;
+                        option.value = device.id;
+                        //videoDevices.appendChild(option);
+                        console.log(option);
+
+                        if(connection.mediaConstraints.video.optional.length && connection.mediaConstraints.video.optional[0].sourceId === device.id) {
+                            option.selected = true;
+                        }
+                    }
+                });
+            });
+
+
+    //////
+
   }
   /**
    * Gets the socket.

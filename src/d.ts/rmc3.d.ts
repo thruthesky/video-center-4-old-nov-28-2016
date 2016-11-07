@@ -4,4 +4,5 @@ declare module "RTCMultiConnection" {
 declare var RTCMultiConnection: RTCMultiConnection;
 interface RTCMultiConnection {
     new():void;
+    enumerateDevices( func: any ): any;
 }
