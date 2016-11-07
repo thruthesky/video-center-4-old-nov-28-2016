@@ -21,6 +21,7 @@ export class RoomPage {
   DrawColor;
 
 video_url;
+audios = [];
   constructor(
     public navCtrl: NavController, 
     private vc: x.Videocenter,
@@ -62,6 +63,66 @@ videos.appendChild( video );
 
 //    videoLayout( Cookies.get('video-list-style') );
 };
+  this.showSettings();
+  }
+
+
+  showSettings() {
+
+    //////
+
+
+    let connection = x.Videocenter.connection;
+    /**
+     * @todo Open camera first and change camera...
+     */
+    connection.DetectRTC.load(() => {
+                connection.DetectRTC.MediaDevices.forEach((device) => {
+                  /*
+                    if(document.getElementById(device.id)) {
+                        return;
+                    }
+                    */
+
+                    if(device.kind === 'audioinput') {
+                        //var option = document.createElement('option');
+                        //option.id = device.id;
+                        //option.innerHTML = device.label || device.id;
+                        //option.value = device.id;
+                        //console.log('audio: ', option);
+                        //audioDevices.appendChild(option);
+                        let audio = {
+                          text: device.label || device.id,
+                          value: device.id
+                        };
+                        this.audios.push( audio );
+
+console.log('audios:',this.audios);
+
+
+                        // selected audio
+                        if(connection.mediaConstraints.audio.optional.length && connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
+                            option.selected = true;
+                        }
+                    }
+
+                    if(device.kind.indexOf('video') !== -1) {
+                        var option = document.createElement('option');
+                        option.id = device.id;
+                        option.innerHTML = device.label || device.id;
+                        option.value = device.id;
+                        //videoDevices.appendChild(option);
+                        console.log('video: ', option);
+
+                        if(connection.mediaConstraints.video.optional.length && connection.mediaConstraints.video.optional[0].sourceId === device.id) {
+                            option.selected = true;
+                        }
+                    }
+                });
+            });
+
+
+    //////
   }
   onClickLobby() {
     this.vc.leaveRoom(()=> {

@@ -15,6 +15,12 @@
       <div class="user"><img src="x-assets/2.png"></div>
 
 <h3>video</h3>
+
+<ion-select [(ngModel)]="selectedAudio">
+  <ion-option *ngFor=" let audio of audios " value="{{ audio.value }}">{{ audio.text }}</ion-option>
+</ion-select>
+
+
 <div id="videos"></div>
 
       <h4>end</h4>

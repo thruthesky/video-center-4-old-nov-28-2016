@@ -87,48 +87,6 @@ connection.iceServers.push({
 
 
 
-    //////
-
-
-    /**
-     * @todo Open camera first and change camera...
-     */
-    connection.DetectRTC.load(function() {
-                connection.DetectRTC.MediaDevices.forEach(function(device) {
-                    if(document.getElementById(device.id)) {
-                        return;
-                    }
-
-                    if(device.kind === 'audioinput') {
-                        var option = document.createElement('option');
-                        option.id = device.id;
-                        option.innerHTML = device.label || device.id;
-                        option.value = device.id;
-                        console.log(option);
-                        //audioDevices.appendChild(option);
-
-                        if(connection.mediaConstraints.audio.optional.length && connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
-                            option.selected = true;
-                        }
-                    }
-
-                    if(device.kind.indexOf('video') !== -1) {
-                        var option = document.createElement('option');
-                        option.id = device.id;
-                        option.innerHTML = device.label || device.id;
-                        option.value = device.id;
-                        //videoDevices.appendChild(option);
-                        console.log(option);
-
-                        if(connection.mediaConstraints.video.optional.length && connection.mediaConstraints.video.optional[0].sourceId === device.id) {
-                            option.selected = true;
-                        }
-                    }
-                });
-            });
-
-
-    //////
 
   }
   /**
