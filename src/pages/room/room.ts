@@ -23,6 +23,7 @@ export class RoomPage {
   video_url;
   audios = [];
   videos = [];
+  oldvideo;
   constructor(
     public navCtrl: NavController, 
     private vc: x.Videocenter,
@@ -38,42 +39,35 @@ export class RoomPage {
         this.vc.whiteboard( data,() => { console.log("get whiteboard history")} );
         connection.openOrJoin( roomname );
       });
-     
       this.listenEvents();
-
-
-
-
     let connection = x.Videocenter.connection;
 
 //// connection a room
 connection.onstream = (event) => {
-    //console.log('connection id: ' + connection.userid);
-    //console.log('event id: ' + event.userid);
-    //console.log(connection);
+  //console.log('connection id: ' + connection.userid);
+  //console.log('event id: ' + event.userid);
+  //console.log(connection);
+  
+  // console.log('onstream : ', event);
+  let video = event.mediaElement;
+  // console.log( 'video: ', video);
 
-console.log('onstream : ', event);
-let video = event.mediaElement;
-console.log( 'video: ', video);
+  let videos= document.getElementById('videos');
+  videos.appendChild( video );
+  this.oldvideo = video;
+      ///
+  //    roomAddVideo( event );
 
-let videos= document.getElementById('videos');
-videos.appendChild( video );
-
-    ///
-//    roomAddVideo( event );
-
-//    videoLayout( Cookies.get('video-list-style') );
-};
+  //    videoLayout( Cookies.get('video-list-style') );
+  };
   this.showSettings();
-  }
+}
 
 
   showSettings() {
-
     //////
-
-
     let connection = x.Videocenter.connection;
+    
     /**
      * @todo Open camera first and change camera...
      */
@@ -96,7 +90,7 @@ videos.appendChild( video );
                   value: device.id
                 };
                 this.audios.push( audio );
-                console.log('audios:',this.audios);
+                // console.log('audios:',this.audios);
                 // selected audio
                 // if(connection.mediaConstraints.audio.optional.length && connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
                 //     option.selected = true;
@@ -115,7 +109,7 @@ videos.appendChild( video );
                   value: device.id
                 };
                 this.videos.push( video );
-                console.log('audios:',this.videos);
+                // console.log('audios:',this.videos);
                 // if(connection.mediaConstraints.video.optional.length && connection.mediaConstraints.video.optional[0].sourceId === device.id) {
                 //     option.selected = true;
                 // }
@@ -130,6 +124,56 @@ videos.appendChild( video );
     this.vc.leaveRoom(()=> {
       this.navCtrl.setRoot( LobbyPage );
     });    
+  }
+  onChangeVideo( data ) {
+    let connection = x.Videocenter.connection;
+    let videoSourceId = data;
+    if(connection.mediaConstraints.video.optional.length && connection.attachStreams.length) {
+        if(connection.mediaConstraints.video.optional[0].sourceId === videoSourceId) {
+            alert('Selected video device is already selected.');
+            return;
+        }
+    }
+    connection.attachStreams.forEach(function(stream) {
+        stream.getVideoTracks().forEach(function(track) {
+            stream.removeTrack(track);
+            if(track.stop) {
+                track.stop();
+            }
+        });
+    });
+    connection.mediaConstraints.video.optional = [{
+        sourceId: videoSourceId
+    }];
+    
+    let videos= document.getElementById('videos');
+    console.log(this.oldvideo);
+    videos.removeChild( this.oldvideo );
+    connection.captureUserMedia();
+  }
+  
+  onChangeAudio( data ) {
+    console.log("change audio", data);
+    let connection = x.Videocenter.connection;
+    var audioSourceId = data;
+    if(connection.mediaConstraints.audio.optional.length && connection.attachStreams.length) {
+        if(connection.mediaConstraints.audio.optional[0].sourceId === audioSourceId) {
+            alert('Selected audio device is already selected.');
+            return;
+        }
+    }
+    connection.attachStreams.forEach(function(stream) {
+        stream.getAudioTracks().forEach(function(track) {
+            stream.removeTrack(track);
+            if(track.stop) {
+                track.stop();
+            }
+        });
+    });
+    connection.mediaConstraints.audio.optional = [{
+        sourceId: audioSourceId
+    }];
+    connection.captureUserMedia();
   }
   onSendMessage(message: string) {
     if(message != ""){
