@@ -173,6 +173,9 @@ connection.onstream = (event) => {
     connection.mediaConstraints.audio.optional = [{
         sourceId: audioSourceId
     }];
+    let videos= document.getElementById('videos');
+    console.log(this.oldvideo);
+    videos.removeChild( this.oldvideo );
     connection.captureUserMedia();
   }
   onSendMessage(message: string) {
