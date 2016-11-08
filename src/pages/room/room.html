@@ -2,79 +2,82 @@
   <ion-navbar>
     <ion-title>
       Room {{ title }}
+      <ion-icon name="settings" (click)=" settings = ! settings "></ion-icon>
        <button ion-button (click)="onClickLobby()"  color="dark">Lobby</button>
     </ion-title>
   </ion-navbar>
 </ion-header>
 
-<ion-content >
-  <!--Whiteboard Canvas-->
-   
-    <div class="users" layout="overlap">
-      <div class="user"><img src="x-assets/1.png"></div>
-      <div class="user"><img src="x-assets/2.png"></div>
+<ion-content>
 
-<h3>video</h3>
-
-  <ion-item>
-    <ion-label>Select Video</ion-label>
-    <ion-select [(ngModel)]="selectedVideo" #video (ngModelChange)="onChangeVideo($event)">
-      <ion-option *ngFor="let video of videos" value="{{ video.value }}" >{{video.text}}</ion-option>
-    </ion-select>
-  </ion-item>
-
-  <ion-item>
-    <ion-label>Select Audio</ion-label>
-    <ion-select [(ngModel)]="selectedAudio" #audio (ngModelChange)="onChangeAudio($event)">
-      <ion-option *ngFor="let audio of audios" value="{{ audio.value }}" >{{audio.text}}</ion-option>
-    </ion-select>
-  </ion-item>
+  <div *ngIf=" settings ">
+    <ion-item>
+      <ion-label>Select Video</ion-label>
+      <ion-select [(ngModel)]="selectedVideo" #video (ngModelChange)="onChangeVideo($event)">
+        <ion-option *ngFor="let video of videos" value="{{ video.value }}" >{{video.text}}</ion-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label>Select Audio</ion-label>
+      <ion-select [(ngModel)]="selectedAudio" #audio (ngModelChange)="onChangeAudio($event)">
+        <ion-option *ngFor="let audio of audios" value="{{ audio.value }}" >{{audio.text}}</ion-option>
+      </ion-select>
+    </ion-item>
+  </div>
+  <div id="video-container"></div>
 
 
-<div id="videos"></div>
 
-      <h4>end</h4>
-                              
-    </div>
-      <div class="container">
-        <canvas mycanvas [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
-        <button ion-button color="dark" (click)="onClickClear()" id="clear">
-          <ion-icon name="md-square-outline" class="ion-icons">
-          </ion-icon>
-        </button>
-        <ion-buttons color="dark" id="ion-draw-color">
-          <ion-icon name="md-color-palette" class="ion-icons">
-            <ion-select [(ngModel)]="DrawColor" (ngModelChange)="dcolor = $event" cancelText="Cancel" okText="Okay">
-              <ion-option value="#161515">Black</ion-option>
-              <ion-option value="#57646B">Grey</ion-option>
-              <ion-option value="#fff">White</ion-option>
-              <ion-option value="#D01B1B">Red</ion-option>
-              <ion-option value="#1DB73C">Green</ion-option>
-              <ion-option value="#2094D7">Blue</ion-option>             
-            </ion-select>
-          </ion-icon>
-        </ion-buttons>
-        <ion-buttons  id="ion-draw-size">
-          <ion-icon name="md-options" class="ion-icons">
-            <ion-select [(ngModel)]="DrawSize" (ngModelChange)="dsize = $event" cancelText="Cancel" okText="Okay">
-              <ion-option value="2">Small</ion-option>
-              <ion-option value="5">Medium</ion-option>
-              <ion-option value="8">Large</ion-option>     
-            </ion-select>
-          </ion-icon>
-        </ion-buttons>
 
-        <button ion-button color="dark" (click)="eraseMode()" id="ion-erase">
-          <ion-icon name="ios-hand" class="ion-icons">
-          </ion-icon>
-        </button> 
-        <button ion-button color="dark" (click)="drawMode()" id="ion-draw">
-          <ion-icon name="ios-brush" class="ion-icons">
-          </ion-icon>
-        </button>  
-      </div>
-  <!--WC-->
 
+  <div class="whiteboard-container">
+    <canvas mycanvas [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
+
+    <i>
+    <button ion-button color="dark" (click)="drawMode()" id="ion-draw">
+      <ion-icon name="ios-brush"></ion-icon>
+    </button>  
+
+    <button ion-button color="dark" (click)="eraseMode()">
+      <ion-icon name="ios-hand"></ion-icon>
+    </button> 
+
+
+    <button ion-button color="dark" (click)="onClickClear()">
+      <ion-icon name="md-square-outline"></ion-icon>
+    </button>
+
+    <button ion-button color="dark">
+      <ion-icon name="md-color-palette"></ion-icon>
+    </button>
+    <!--
+        <ion-select [(ngModel)]="DrawColor" (ngModelChange)="dcolor = $event" cancelText="Cancel" okText="Okay">
+          <ion-option value="#161515">Black</ion-option>
+          <ion-option value="#57646B">Grey</ion-option>
+          <ion-option value="#fff">White</ion-option>
+          <ion-option value="#D01B1B">Red</ion-option>
+          <ion-option value="#1DB73C">Green</ion-option>
+          <ion-option value="#2094D7">Blue</ion-option>             
+        </ion-select>
+        -->
+
+    <button ion-button color="dark" class="size">
+      <ion-icon name="md-options"></ion-icon>
+      <ion-select [(ngModel)]="DrawSize" (ngModelChange)="dsize = $event" cancelText="Cancel" okText="Okay">
+        <ion-option value="2">Small</ion-option>
+        <ion-option value="5">Medium</ion-option>
+        <ion-option value="8">Large</ion-option>     
+      </ion-select>
+    </button>
+
+    </i><!--/-->
+
+
+
+  </div><!--/whiteboard-container-->
+
+
+  <div class="chat">
     <ion-item>
       <ion-label floating>Message</ion-label>
       <ion-input type="text" [(ngModel)]="inputMessage" (keyup.enter)="onSendMessage(inputMessage)"></ion-input>
@@ -83,4 +86,6 @@
     <ion-list class="chatbox" myautoscroll>
       <ion-item *ngFor="let msg of listMessage[0].messages " ><b>{{msg.name}} </b>{{ msg.message }}</ion-item>
     </ion-list>
+  </div><!--/chat-->
+
 </ion-content>

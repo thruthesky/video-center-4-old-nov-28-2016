@@ -1,4 +1,70 @@
-page-room {
+$medium_break: 510px;
+$left_medium_width: 170px;
+$large_break: 680px;
+$left_large_width: 226px;
+
+page-room ion-content {
+    position: relative;
+}
+#video-container {
+    width: 100%;
+    video {
+        width: 50%;
+    }
+    @media all and ( min-width: $medium_break ) {
+        width: $left_medium_width;
+        video { width: 100%; }
+    }
+    @media all and ( min-width: $large_break ) {
+        width: $left_large_width;
+    }
+}
+.whiteboard-container {
+    position:relative;
+    width: 340px;
+    height: 340px;
+    @media all and ( min-width: $medium_break ) {
+        position: absolute;
+        z-index: 1234;
+        top: 0;
+        left: $left_medium_width + 2px;
+    }
+    @media all and ( min-width: $large_break ) {
+        left: $left_large_width + 2px;
+    }
+    canvas {
+        border:solid 1px black;
+        width: 100%;
+        height: 338px;
+    }
+}
+/** buttons */
+.whiteboard-container i {
+    display: block;
+    position: absolute;
+    top: 0.2em;
+    right: 0.2em;
+    button {
+        margin: 0;
+        border-radius: 0;
+    }
+    button.size {
+        position: relative;
+        overflow: hidden;
+        ion-select {
+
+        }
+    }
+}
+
+.chat {
+    width: 100%;
+    @media all and ( min-width: $medium_break ) {
+        width: $left_medium_width;
+    }
+    @media all and ( min-width: $large_break ) {
+        width: $left_large_width;
+    }
     .chatbox {
         background-color:#e5e9f1;
         color:white;
@@ -6,88 +72,4 @@ page-room {
         overflow: hidden;
         overflow-y: scroll;        
     }
-    canvas {
-        border:solid 1px black;
-       
-    }
-    .container {
-        position: relative;
-        display: inline-block;
-         #ion-draw-size {
-            position: absolute;
-            width: 25px;
-            height: 30px;
-            z-index: 5px;
-            top: 4px;
-            right: 10px;
-            background-color: #222222;
-            color:white;
-        }
-        #ion-draw-color {
-            position: absolute;
-            width: 25px;
-            height: 30px;
-            z-index: 5px;
-            top: 4px;
-            right: 35px;
-            background-color: #222222;
-            color:white;
-        }
-        
-        #clear {
-            position: absolute;
-            width: 25px;
-            height: 30px;
-            z-index: 100px;
-            top:0;
-            right: 60px;
-        }
-        #ion-erase {
-            position: absolute;
-            width: 25px;
-            height: 30px;
-            z-index: 100px;
-            top:0;
-            right: 90px;
-        }
-        #ion-draw {
-            position: absolute;
-            width: 25px;
-            height: 30px;
-            z-index: 100px;
-            top:0;
-            right: 120px;
-        }
-        .ion-icons {
-            font-size:30px;
-            z-index: 100px;
-        }
-        ion-buttons {
-            z-index: 100px;
-        }
-        .select-text {
-            display:none;
-        }
-        .select-md {
-        padding: 1px 8px 13px 16px;
-        top: 0;
-        position: absolute;
-        }
-    }
-    .users {
-        position:relative;
-    }
-    .user {
-        position: relative;
-        display: inline-block;
-        width: 50%;
-        float: left;
-    }
-    
-    
-}
-
-
-video {
-    width: 100%;
 }
