@@ -2,8 +2,14 @@
   <ion-navbar>
     <ion-title>
       Room {{ title }}
-      <ion-icon name="settings" (click)=" settings = ! settings "></ion-icon>
-       <button ion-button (click)="onClickLobby()"  color="dark">Lobby</button>
+      
+     
+    <button ion-button color="dark" (click)=" settings = ! settings " >
+      <ion-icon name="settings" ></ion-icon>
+    </button>       
+    <button ion-button color="dark" (click)="onClickLobby()" >
+      <ion-icon name="ios-home"></ion-icon>
+    </button>  
     </ion-title>
   </ion-navbar>
 </ion-header>
@@ -26,14 +32,12 @@
   </div>
   <div id="video-container"></div>
 
-
-
-
-
   <div class="whiteboard-container">
     <canvas mycanvas [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
-
+  <!--<canvas  width="{{ canvaswidth }}" height="{{ canvasheight }}"  mycanvas [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>-->
+    
     <i>
+    
     <button ion-button color="dark" (click)="drawMode()" id="ion-draw">
       <ion-icon name="ios-brush"></ion-icon>
     </button>  
@@ -47,19 +51,20 @@
       <ion-icon name="md-square-outline"></ion-icon>
     </button>
 
-    <button ion-button color="dark">
+    <button ion-button color="dark" class="color">
       <ion-icon name="md-color-palette"></ion-icon>
+      <ion-select [(ngModel)]="DrawColor" (ngModelChange)="dcolor = $event" cancelText="Cancel" okText="Okay">
+        <ion-option value="#161515">Black</ion-option>
+        <ion-option value="#57646B">Grey</ion-option>
+        <ion-option value="#fff">White</ion-option>
+        <ion-option value="#D01B1B">Red</ion-option>
+        <ion-option value="#1DB73C">Green</ion-option>
+        <ion-option value="#2094D7">Blue</ion-option>             
+      </ion-select>
     </button>
-    <!--
-        <ion-select [(ngModel)]="DrawColor" (ngModelChange)="dcolor = $event" cancelText="Cancel" okText="Okay">
-          <ion-option value="#161515">Black</ion-option>
-          <ion-option value="#57646B">Grey</ion-option>
-          <ion-option value="#fff">White</ion-option>
-          <ion-option value="#D01B1B">Red</ion-option>
-          <ion-option value="#1DB73C">Green</ion-option>
-          <ion-option value="#2094D7">Blue</ion-option>             
-        </ion-select>
-        -->
+    
+        
+        
 
     <button ion-button color="dark" class="size">
       <ion-icon name="md-options"></ion-icon>

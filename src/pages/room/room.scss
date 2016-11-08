@@ -34,8 +34,8 @@ page-room ion-content {
     }
     canvas {
         border:solid 1px black;
-        width: 100%;
-        height: 338px;
+        /*width: 340px;
+        height: 340px;*/
     }
 }
 /** buttons */
@@ -48,13 +48,17 @@ page-room ion-content {
         margin: 0;
         border-radius: 0;
     }
-    button.size {
+    button.size, button.color {
         position: relative;
         overflow: hidden;
+        width: 45px;
+        height: 36px;
         ion-select {
-
+            position: absolute;
+            padding: 9px 23px;
         }
     }
+   
 }
 
 .chat {

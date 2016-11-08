@@ -13,13 +13,14 @@ export class RoomPage {
   title: string;
   inputMessage: string;
   listMessage: MESSAGELIST = <MESSAGELIST> {};
+  canvaswidth:string;
+  canvasheight:string;
   dmode;
   dsize;
   dcolor;
   DrawMode;
   DrawSize;
   DrawColor;
-
   video_url;
   audios = [];
   videos = [];
@@ -28,6 +29,8 @@ export class RoomPage {
     public navCtrl: NavController, 
     private vc: x.Videocenter,
     private events: Events ) {
+      this.canvaswidth = "340px";
+      this.canvasheight = "340px";
       this.inputMessage = '';
       if ( this.listMessage[0] === void 0 ) {
         this.listMessage[0] = { messages: [] };
@@ -146,7 +149,7 @@ connection.onstream = (event) => {
         sourceId: videoSourceId
     }];
     
-    let videos= document.getElementById('videos');
+    let videos= document.getElementById('video-container');
     console.log(this.oldvideo);
     videos.removeChild( this.oldvideo );
     connection.captureUserMedia();
@@ -173,7 +176,7 @@ connection.onstream = (event) => {
     connection.mediaConstraints.audio.optional = [{
         sourceId: audioSourceId
     }];
-    let videos= document.getElementById('videos');
+    let videos= document.getElementById('video-container');
     console.log(this.oldvideo);
     videos.removeChild( this.oldvideo );
     connection.captureUserMedia();
