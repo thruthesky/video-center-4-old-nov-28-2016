@@ -25,10 +25,16 @@ export class RoomPage {
   audios = [];
   videos = [];
   oldvideo;
+  selectedAudio;
+  defaultAudio;
+  selectedVideo;
+  defaultVideo;
   constructor(
     public navCtrl: NavController, 
     private vc: x.Videocenter,
     private events: Events ) {
+      this.defaultAudio = false;
+      this.defaultVideo = false;
       this.canvaswidth = "340px";
       this.canvasheight = "340px";
       this.inputMessage = '';
@@ -70,7 +76,7 @@ connection.onstream = (event) => {
   showSettings() {
     //////
     let connection = x.Videocenter.connection;
-    
+ 
     /**
      * @todo Open camera first and change camera...
      */
@@ -81,25 +87,6 @@ connection.onstream = (event) => {
                 return;
             }
             */
-            if(device.kind === 'audioinput') {
-                //var option = document.createElement('option');
-                //option.id = device.id;
-                //option.innerHTML = device.label || device.id;
-                //option.value = device.id;
-                //console.log('audio: ', option);
-                //audioDevices.appendChild(option);
-                let audio = {
-                  text: device.label || device.id,
-                  value: device.id
-                };
-                this.audios.push( audio );
-                // console.log('audios:',this.audios);
-                // selected audio
-                // if(connection.mediaConstraints.audio.optional.length && connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
-                //     option.selected = true;
-                // }
-            }
-
             if(device.kind.indexOf('video') !== -1) {
                 // var option = document.createElement('option');
                 // option.id = device.id;
@@ -111,12 +98,46 @@ connection.onstream = (event) => {
                   text: device.label || device.id,
                   value: device.id
                 };
+                
                 this.videos.push( video );
+                if(!this.defaultVideo){
+                  this.defaultVideo = true;
+                  this.selectedVideo = video.value;
+                }
                 // console.log('audios:',this.videos);
                 // if(connection.mediaConstraints.video.optional.length && connection.mediaConstraints.video.optional[0].sourceId === device.id) {
                 //     option.selected = true;
                 // }
             }
+            if(device.kind === 'audioinput') {
+                //var option = document.createElement('option');
+                //option.id = device.id;
+                //option.innerHTML = device.label || device.id;
+                //option.value = device.id;
+                //console.log('audio: ', option);
+                //audioDevices.appendChild(option);
+                let audio = {
+                    text: device.label || device.id,
+                    value: device.id
+                  };
+          
+                
+                this.audios.push( audio );
+                if(!this.defaultAudio){
+                  this.defaultAudio = true;
+                  this.selectedAudio = audio.value;
+                }
+                // console.log('audios:',this.audios);
+                // selected audio
+                // if(connection.mediaConstraints.audio.optional.length && connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
+                //     option.selected = true;
+                // }
+                if(connection.mediaConstraints.audio.optional.length && connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
+                    console.log(device.id);
+                }
+            }
+
+            
         });
     });
 
@@ -131,6 +152,7 @@ connection.onstream = (event) => {
   onChangeVideo( data ) {
     let connection = x.Videocenter.connection;
     let videoSourceId = data;
+ 
     if(connection.mediaConstraints.video.optional.length && connection.attachStreams.length) {
         if(connection.mediaConstraints.video.optional[0].sourceId === videoSourceId) {
             alert('Selected video device is already selected.');
@@ -150,13 +172,11 @@ connection.onstream = (event) => {
     }];
     
     let videos= document.getElementById('video-container');
-    console.log(this.oldvideo);
     videos.removeChild( this.oldvideo );
     connection.captureUserMedia();
   }
   
   onChangeAudio( data ) {
-    console.log("change audio", data);
     let connection = x.Videocenter.connection;
     var audioSourceId = data;
     if(connection.mediaConstraints.audio.optional.length && connection.attachStreams.length) {
@@ -176,8 +196,8 @@ connection.onstream = (event) => {
     connection.mediaConstraints.audio.optional = [{
         sourceId: audioSourceId
     }];
+    
     let videos= document.getElementById('video-container');
-    console.log(this.oldvideo);
     videos.removeChild( this.oldvideo );
     connection.captureUserMedia();
   }

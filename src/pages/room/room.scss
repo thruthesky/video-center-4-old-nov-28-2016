@@ -5,6 +5,12 @@ $left_large_width: 226px;
 
 page-room ion-content {
     position: relative;
+    @media all and ( min-width: $medium_break ) {
+    width: $left_medium_width;
+    }
+    @media all and ( min-width: $large_break ) {
+        width: $left_large_width;
+    }
 }
 #video-container {
     width: 100%;

@@ -16,7 +16,7 @@
 
 <ion-content>
 
-  <div *ngIf=" settings ">
+  <!--<div *ngIf=" settings ">-->
     <ion-item>
       <ion-label>Select Video</ion-label>
       <ion-select [(ngModel)]="selectedVideo" #video (ngModelChange)="onChangeVideo($event)">
@@ -27,9 +27,11 @@
       <ion-label>Select Audio</ion-label>
       <ion-select [(ngModel)]="selectedAudio" #audio (ngModelChange)="onChangeAudio($event)">
         <ion-option *ngFor="let audio of audios" value="{{ audio.value }}" >{{audio.text}}</ion-option>
+        
       </ion-select>
     </ion-item>
-  </div>
+
+  <!--</div>-->
   <div id="video-container"></div>
 
   <div class="whiteboard-container">
