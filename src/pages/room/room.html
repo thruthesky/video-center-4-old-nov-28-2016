@@ -16,7 +16,7 @@
 
 <ion-content>
 
-  <!--<div *ngIf=" settings ">-->
+  <div *ngIf=" settings ">
     <ion-item>
       <ion-label>Select Video</ion-label>
       <ion-select [(ngModel)]="selectedVideo" #video (ngModelChange)="onChangeVideo($event)">
@@ -31,7 +31,7 @@
       </ion-select>
     </ion-item>
 
-  <!--</div>-->
+  </div>
   <div id="video-container"></div>
 
   <div class="whiteboard-container">

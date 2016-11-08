@@ -15,6 +15,7 @@ export class RoomPage {
   listMessage: MESSAGELIST = <MESSAGELIST> {};
   canvaswidth:string;
   canvasheight:string;
+  settings;
   dmode;
   dsize;
   dcolor;
