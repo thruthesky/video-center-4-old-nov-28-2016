@@ -70,7 +70,7 @@ connection.onstream = (event) => {
 
   //    videoLayout( Cookies.get('video-list-style') );
   };
-  this.showSettings();
+  setTimeout(()=>{this.settings = true; this.showSettings()},600);
 }
 
 
@@ -103,7 +103,8 @@ connection.onstream = (event) => {
                 this.videos.push( video );
                 if(!this.defaultVideo){
                   this.defaultVideo = true;
-                  this.selectedVideo = video.value;
+                  // this.selectedVideo = video.value;
+                  this.vc.setConfig('default-video',video.value);
                 }
                 // console.log('audios:',this.videos);
                 // if(connection.mediaConstraints.video.optional.length && connection.mediaConstraints.video.optional[0].sourceId === device.id) {
@@ -126,8 +127,13 @@ connection.onstream = (event) => {
                 this.audios.push( audio );
                 if(!this.defaultAudio){
                   this.defaultAudio = true;
-                  this.selectedAudio = audio.value;
+                  // this.selectedVideo = video.value;
+                  this.vc.setConfig('default-audio',audio.value);
                 }
+                // if(!this.defaultAudio){
+                //   this.defaultAudio = true;
+                //   this.selectedAudio = audio.value;
+                // }
                 // console.log('audios:',this.audios);
                 // selected audio
                 // if(connection.mediaConstraints.audio.optional.length && connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
@@ -137,23 +143,36 @@ connection.onstream = (event) => {
                     console.log(device.id);
                 }
             }
-
-            
         });
+        this.getDefaultAudio();
+        this.getDefaultVideo();
     });
 
 
     //////
+  }
+  getDefaultAudio(){
+    this.vc.config('default-audio',(value)=>{
+      console.log("Default-audio",value);
+      this.selectedAudio = value;
+      this.changeAudio(value);
+    });
+  }
+  getDefaultVideo(){
+    this.vc.config('default-video',(value)=>{
+      this.selectedVideo = value;
+      this.changeVideo(value);
+    });
   }
   onClickLobby() {
     this.vc.leaveRoom(()=> {
       this.navCtrl.setRoot( LobbyPage );
     });    
   }
-  onChangeVideo( data ) {
+  changeVideo( videoSourceId ) {
     let connection = x.Videocenter.connection;
-    let videoSourceId = data;
- 
+    this.vc.setConfig('default-video',videoSourceId);
+    
     if(connection.mediaConstraints.video.optional.length && connection.attachStreams.length) {
         if(connection.mediaConstraints.video.optional[0].sourceId === videoSourceId) {
             alert('Selected video device is already selected.');
@@ -173,13 +192,15 @@ connection.onstream = (event) => {
     }];
     
     let videos= document.getElementById('video-container');
-    videos.removeChild( this.oldvideo );
-    connection.captureUserMedia();
+    if(this.oldvideo){
+      videos.removeChild( this.oldvideo );
+      connection.captureUserMedia();
+    }  
   }
   
-  onChangeAudio( data ) {
+  changeAudio( audioSourceId ) {
     let connection = x.Videocenter.connection;
-    var audioSourceId = data;
+    this.vc.setConfig('default-audio',audioSourceId);
     if(connection.mediaConstraints.audio.optional.length && connection.attachStreams.length) {
         if(connection.mediaConstraints.audio.optional[0].sourceId === audioSourceId) {
             alert('Selected audio device is already selected.');
@@ -199,8 +220,10 @@ connection.onstream = (event) => {
     }];
     
     let videos= document.getElementById('video-container');
-    videos.removeChild( this.oldvideo );
-    connection.captureUserMedia();
+    if(this.oldvideo){
+      videos.removeChild( this.oldvideo );
+      connection.captureUserMedia();
+    }  
   }
   onSendMessage(message: string) {
     if(message != ""){
