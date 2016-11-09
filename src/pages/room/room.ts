@@ -14,7 +14,7 @@ export class RoomPage {
   title: string;
   inputMessage: string;
   listMessage: MESSAGELIST = <MESSAGELIST> {};
-  settings;
+  settings:boolean;
   dmode;
   dsize;
   dcolor;
@@ -47,27 +47,27 @@ export class RoomPage {
         connection.openOrJoin( roomname );
       });
       this.listenEvents();
-    let connection = x.Videocenter.connection;
+      let connection = x.Videocenter.connection;
 
-//// connection a room
-connection.onstream = (event) => {
-  //console.log('connection id: ' + connection.userid);
-  //console.log('event id: ' + event.userid);
-  //console.log(connection);
-  
-  // console.log('onstream : ', event);
-  let video = event.mediaElement;
-  // console.log( 'video: ', video);
+      //// connection a room
+      connection.onstream = (event) => {
+        //console.log('connection id: ' + connection.userid);
+        //console.log('event id: ' + event.userid);
+        //console.log(connection);
+        
+        // console.log('onstream : ', event);
+        let video = event.mediaElement;
+        // console.log( 'video: ', video);
 
-  let videos= document.getElementById('video-container');
-  videos.appendChild( video );
-  this.oldvideo = video;
-      ///
-  //    roomAddVideo( event );
+        let videos= document.getElementById('video-container');
+        videos.appendChild( video );
+        this.oldvideo = video;
+            ///
+        //    roomAddVideo( event );
 
-  //    videoLayout( Cookies.get('video-list-style') );
-  };
-  setTimeout(()=>{this.settings = true; this.showSettings()},600);
+        //    videoLayout( Cookies.get('video-list-style') );
+        };
+      setTimeout(()=>{this.settings = true; this.showSettings()},600);
 }
   ngOnInit() {
     this.setCanvasSize(this.defaultCanvasSize,this.defaultCanvasSize);
