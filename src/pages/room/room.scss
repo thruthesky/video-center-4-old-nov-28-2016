@@ -5,11 +5,13 @@ $left_large_width: 226px;
 
 page-room ion-content {
     position: relative;
-    @media all and ( min-width: $medium_break ) {
-    width: $left_medium_width;
-    }
-    @media all and ( min-width: $large_break ) {
-        width: $left_large_width;
+    #settings{
+        @media all and ( min-width: $medium_break ) {
+            width: $left_medium_width;
+        }
+        @media all and ( min-width: $large_break ) {
+            width: $left_large_width;
+        }
     }
 }
 #video-container {
@@ -36,6 +38,9 @@ page-room ion-content {
         left: $left_medium_width + 2px;
     }
     @media all and ( min-width: $large_break ) {
+        position: absolute;
+        z-index: 1234;
+        top: 0;
         left: $left_large_width + 2px;
     }
     canvas {

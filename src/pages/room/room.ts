@@ -10,11 +10,10 @@ export interface MESSAGELIST {
   templateUrl: 'room.html'
 })
 export class RoomPage {
+  defaultCanvasSize:string = '340px';
   title: string;
   inputMessage: string;
   listMessage: MESSAGELIST = <MESSAGELIST> {};
-  canvaswidth:string;
-  canvasheight:string;
   settings;
   dmode;
   dsize;
@@ -36,8 +35,6 @@ export class RoomPage {
     private events: Events ) {
       this.defaultAudio = false;
       this.defaultVideo = false;
-      this.canvaswidth = "340px";
-      this.canvasheight = "340px";
       this.inputMessage = '';
       if ( this.listMessage[0] === void 0 ) {
         this.listMessage[0] = { messages: [] };
@@ -72,8 +69,14 @@ connection.onstream = (event) => {
   };
   setTimeout(()=>{this.settings = true; this.showSettings()},600);
 }
-
-
+  ngOnInit() {
+    this.setCanvasSize(this.defaultCanvasSize,this.defaultCanvasSize);
+  }
+  setCanvasSize(h, w) {
+     let mycanvas= document.getElementById('mycanvas');
+     mycanvas.setAttribute('height', h);
+     mycanvas.setAttribute('width', w);
+  }
   showSettings() {
     //////
     let connection = x.Videocenter.connection;

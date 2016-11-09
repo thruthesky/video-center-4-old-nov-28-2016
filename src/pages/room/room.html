@@ -16,7 +16,7 @@
 
 <ion-content>
 
-  <div *ngIf=" settings ">
+  <div *ngIf=" settings " id="settings">
     <ion-item>
       <ion-label>Select Video</ion-label>
       <ion-select [(ngModel)]="selectedVideo" #video (ngModelChange)="changeVideo($event)">
@@ -35,7 +35,7 @@
   <div id="video-container"></div>
 
   <div class="whiteboard-container">
-    <canvas mycanvas [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
+    <canvas mycanvas id="mycanvas" [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
   <!--<canvas  width="{{ canvaswidth }}" height="{{ canvasheight }}"  mycanvas [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>-->
     
     <i>
