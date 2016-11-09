@@ -178,7 +178,8 @@ export class RoomPage {
     
     if(connection.mediaConstraints.video.optional.length && connection.attachStreams.length) {
         if(connection.mediaConstraints.video.optional[0].sourceId === videoSourceId) {
-            alert('Selected video device is already selected.');
+            // alert('Selected video device is already selected.');
+            console.log('Selected video device is already selected.');
             return;
         }
     }
@@ -206,7 +207,8 @@ export class RoomPage {
     this.vc.setConfig('default-audio',audioSourceId);
     if(connection.mediaConstraints.audio.optional.length && connection.attachStreams.length) {
         if(connection.mediaConstraints.audio.optional[0].sourceId === audioSourceId) {
-            alert('Selected audio device is already selected.');
+            // alert('Selected audio device is already selected.');
+            console.log('Selected audio device is already selected.');
             return;
         }
     }
