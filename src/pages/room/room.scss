@@ -54,7 +54,7 @@ page-room ion-content {
 #document {
     background-color: $colorblue;
     width: 100%;
-    input,span {
+    input,p {
         color:white;
     }
     @media all and ( min-width: $medium_break ) {

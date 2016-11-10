@@ -43,12 +43,21 @@
       <ion-item *ngFor="let msg of listMessage[0].messages " ><b>{{msg.name}} </b>{{ msg.message }}</ion-item>
     </ion-list>
   </div><!--/chat-->
-  <div id="document" >
-    <span>Image</span>
-      <div class="file-upload">
-              <input name="userfile" type="file">
-      </div>
-  </div>
+
+  <ion-item id="document">
+    <p>Image</p>
+    <div *ngIf=" urlPhoto " (click)="onClickPhoto()">
+      <img [src]="urlPhoto">
+    </div>
+    <div *ngIf=" data?.urlPhoto ">
+      <button ion-button (click)="onClickDeletePhoto( data.refPhoto )">DELETE</button>
+    </div>
+    <input *ngIf=" ! cordova " type="file" (change)="onChangeFile($event)">
+    <div *ngIf="position">
+      <progress [value]="position" max="100"></progress>
+    </div>
+  </ion-item><!--Document-->
+  
   <div class="whiteboard-container">
     <canvas mycanvas id="mycanvas" [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
   <!--<canvas  width="{{ canvaswidth }}" height="{{ canvasheight }}"  mycanvas [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>-->

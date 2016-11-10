@@ -1,7 +1,10 @@
 import { Component } from '@angular/core';
-import { NavController, Events } from 'ionic-angular';
+import { Platform, NavController, Events } from 'ionic-angular';
 import * as x from '../../providers/videocenter';
 import { LobbyPage } from '../lobby/lobby';
+
+import { Post } from '../../fireframe2/post';
+import { Data } from '../../fireframe2/data';
 export interface MESSAGELIST {
     messages: Array< x.MESSAGE >
 }
@@ -15,24 +18,34 @@ export class RoomPage {
   inputMessage: string;
   listMessage: MESSAGELIST = <MESSAGELIST> {};
   settings:boolean;
-  dmode;
-  dsize;
-  dcolor;
-  DrawMode;
-  DrawSize;
-  DrawColor;
-  video_url;
-  audios = [];
-  videos = [];
-  oldvideo;
-  selectedAudio;
-  defaultAudio;
-  selectedVideo;
-  defaultVideo;
+  dmode:any;
+  dsize:any;
+  dcolor:any;
+  DrawMode:any;
+  DrawSize:any;
+  DrawColor:any;
+  video_url:any;
+  audios:any = [];
+  videos:any = [];
+  oldvideo:any;
+  selectedAudio:any;
+  defaultAudio:any;
+  selectedVideo:any;
+  defaultVideo:any;
+  // File upload
+  urlPhoto: string = "x-assets/1.png";
+  position:number = 0;
+  progress = null;
+  file_progress = null;
+ 
+
   constructor(
     public navCtrl: NavController, 
     private vc: x.Videocenter,
-    private events: Events ) {
+    private events: Events,
+    private post: Post,
+    private platform: Platform,
+    private file: Data) {
       this.defaultAudio = false;
       this.defaultVideo = false;
       this.inputMessage = '';
@@ -68,7 +81,7 @@ export class RoomPage {
         //    videoLayout( Cookies.get('video-list-style') );
         };
       setTimeout(()=>{this.settings = true; this.showSettings()},600);
-}
+  }
   ngOnInit() {
     this.setCanvasSize(this.defaultCanvasSize,this.defaultCanvasSize);
   }
@@ -266,5 +279,29 @@ export class RoomPage {
   eraseMode() {
     this.dmode = "e";
   }
- 
+
+  // File Upload
+  onChangeFile(event) {
+      let file = event.target.files[0];
+      if ( file === void 0 ) return;
+      this.file_progress = true;
+      let ref = 'videocenter/' +  file.name;
+      this.file.upload( { file: file, ref: ref }, uploaded => {
+          this.onFileUploaded( uploaded.url, uploaded.ref );
+      },
+      e => {
+          this.file_progress = false;
+          alert(e);
+      },
+      percent => {
+          this.position = percent;
+      } );
+  }
+  onFileUploaded( url, ref ) {
+      this.file_progress = false;
+      this.urlPhoto = url;
+  }
+  onClickPhoto() {
+    alert("I Click the Photo!");
+  }
 }
