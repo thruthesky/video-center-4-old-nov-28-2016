@@ -33,7 +33,22 @@
 
   </div>
   <div id="video-container"></div>
-
+  <div class="chat">
+    <ion-item>
+      <ion-label floating>Message</ion-label>
+      <ion-input type="text" [(ngModel)]="inputMessage" (keyup.enter)="onSendMessage(inputMessage)"></ion-input>
+      <button ion-button item-right (click)="onSendMessage(inputMessage)" color="primary" >Send</button>
+    </ion-item>
+    <ion-list class="chatbox" myautoscroll>
+      <ion-item *ngFor="let msg of listMessage[0].messages " ><b>{{msg.name}} </b>{{ msg.message }}</ion-item>
+    </ion-list>
+  </div><!--/chat-->
+  <div id="document" >
+    <span>Image</span>
+      <div class="file-upload">
+              <input name="userfile" type="file">
+      </div>
+  </div>
   <div class="whiteboard-container">
     <canvas mycanvas id="mycanvas" [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
   <!--<canvas  width="{{ canvaswidth }}" height="{{ canvasheight }}"  mycanvas [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>-->
@@ -84,15 +99,6 @@
   </div><!--/whiteboard-container-->
 
 
-  <div class="chat">
-    <ion-item>
-      <ion-label floating>Message</ion-label>
-      <ion-input type="text" [(ngModel)]="inputMessage" (keyup.enter)="onSendMessage(inputMessage)"></ion-input>
-      <button ion-button item-right (click)="onSendMessage(inputMessage)" color="primary" >Send</button>
-    </ion-item>
-    <ion-list class="chatbox" myautoscroll>
-      <ion-item *ngFor="let msg of listMessage[0].messages " ><b>{{msg.name}} </b>{{ msg.message }}</ion-item>
-    </ion-list>
-  </div><!--/chat-->
+  
 
 </ion-content>

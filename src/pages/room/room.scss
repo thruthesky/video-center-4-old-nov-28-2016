@@ -2,7 +2,13 @@ $medium_break: 510px;
 $left_medium_width: 170px;
 $large_break: 680px;
 $left_large_width: 226px;
-
+$colorblue: #42bdec;
+.toolbar-background-md {
+    background: $colorblue;
+}
+.toolbar-title-md {
+    color:white;
+}
 page-room ion-content {
     position: relative;
     #settings{
@@ -22,6 +28,41 @@ page-room ion-content {
     @media all and ( min-width: $medium_break ) {
         width: $left_medium_width;
         video { width: 100%; }
+    }
+    @media all and ( min-width: $large_break ) {
+        width: $left_large_width;
+    }
+}
+
+
+.chat {
+    width: 100%;
+    @media all and ( min-width: $medium_break ) {
+        width: $left_medium_width;
+    }
+    @media all and ( min-width: $large_break ) {
+        width: $left_large_width;
+    }
+    .chatbox {
+        background-color:#e5e9f1;
+        color:white;
+        height: 140px;
+        overflow: hidden;
+        overflow-y: scroll;        
+    }
+}
+#document {
+    background-color: $colorblue;
+    width: 100%;
+    input,span {
+        color:white;
+    }
+    @media all and ( min-width: $medium_break ) {
+        width: $left_medium_width;
+        input {
+            color:white;
+            font-size:12px;
+        }
     }
     @media all and ( min-width: $large_break ) {
         width: $left_large_width;
@@ -72,19 +113,3 @@ page-room ion-content {
    
 }
 
-.chat {
-    width: 100%;
-    @media all and ( min-width: $medium_break ) {
-        width: $left_medium_width;
-    }
-    @media all and ( min-width: $large_break ) {
-        width: $left_large_width;
-    }
-    .chatbox {
-        background-color:#e5e9f1;
-        color:white;
-        height: 140px;
-        overflow: hidden;
-        overflow-y: scroll;        
-    }
-}

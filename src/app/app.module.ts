@@ -8,7 +8,7 @@ import { Videocenter } from '../providers/videocenter';
 import { MycanvasDirective } from '../components/mycanvas/mycanvas';
 import { AutoscrollDirective } from '../components/autoscroll/autoscroll';
 import { Storage } from '@ionic/storage';
-
+import { FireModule } from '../fireframe2/fire-module';
 
 @NgModule({
   declarations: [
@@ -20,7 +20,8 @@ import { Storage } from '@ionic/storage';
     AutoscrollDirective
   ],
   imports: [
-    IonicModule.forRoot(MyApp)
+    IonicModule.forRoot(MyApp),
+    FireModule
   ],
   bootstrap: [IonicApp],
   entryComponents: [

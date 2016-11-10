@@ -119,7 +119,7 @@ export class EntrancePage {
     this.vc.setConfig('default-audio',audioSourceId);
     if(connection.mediaConstraints.audio.optional.length && connection.attachStreams.length) {
         if(connection.mediaConstraints.audio.optional[0].sourceId === audioSourceId) {
-            alert('Selected audio device is already selected.');
+            // alert('Selected audio device is already selected.');
             console.log('Selected audio device is already selected.');
             return;
         }
