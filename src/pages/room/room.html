@@ -56,6 +56,7 @@
     <div *ngIf="position">
       <progress [value]="position" max="100"></progress>
     </div>
+    <div *ngIf="loader">{{connectingToServer}}</div>
   </ion-item><!--Document-->
   
   <div class="whiteboard-container">

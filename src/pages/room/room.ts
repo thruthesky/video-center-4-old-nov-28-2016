@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Platform, NavController, Events } from 'ionic-angular';
+import { Platform, NavController, NavParams, AlertController, Events } from 'ionic-angular';
 import * as x from '../../providers/videocenter';
 import { LobbyPage } from '../lobby/lobby';
 
@@ -8,11 +8,19 @@ import { Data } from '../../fireframe2/data';
 export interface MESSAGELIST {
     messages: Array< x.MESSAGE >
 }
+
+export interface  PostEdit {
+    key : string;
+    namePhoto : string;
+    urlPhoto?: string;
+    refPhoto?: string;
+}
 @Component({
   selector: 'page-room',
   templateUrl: 'room.html'
 })
 export class RoomPage {
+  
   defaultCanvasSize:string = '340px';
   title: string;
   inputMessage: string;
@@ -33,19 +41,27 @@ export class RoomPage {
   selectedVideo:any;
   defaultVideo:any;
   // File upload
+  data : PostEdit = <PostEdit> {};
+  postKey: string;
   urlPhoto: string = "x-assets/1.png";
   position:number = 0;
   progress = null;
   file_progress = null;
- 
-
+  loader: boolean = false;
+  cordova: boolean = false;
+  connectingToServer:string = 'Connecting to server...'
   constructor(
     public navCtrl: NavController, 
     private vc: x.Videocenter,
     private events: Events,
     private post: Post,
     private platform: Platform,
-    private file: Data) {
+    private alertCtrl: AlertController,
+    private file: Data,
+    private navParams: NavParams,) {
+      if ( platform.is('cordova') ) this.cordova = true;
+      this.postKey = navParams.get('postKey');
+      console.info('navParams:: ' , this.postKey);
       this.defaultAudio = false;
       this.defaultVideo = false;
       this.inputMessage = '';
@@ -60,6 +76,29 @@ export class RoomPage {
         connection.openOrJoin( roomname );
       });
       this.listenEvents();
+      // File Upload
+      if ( this.postKey ) {
+          console.log("PostEditPage:: post edit key=" + this.postKey);
+          this.post
+            .set('key', this.postKey)
+            .get( snapValue => {
+              if( snapValue ) {
+                console.info('snapValue:: ', snapValue);
+                this.data.key = this.postKey ;
+                this.data.namePhoto = snapValue.namePhoto;
+                this.data.urlPhoto = snapValue.urlPhoto;
+                this.data.refPhoto = snapValue.refPhoto;
+                this.urlPhoto = this.data.urlPhoto;
+              }else {
+                console.log('Key Doesnt Exist');
+              }
+
+            },e =>{
+              console.info('Post get() fail on key:' + this.postKey + ', Error:' + e);
+            });
+        }
+
+      // File Upload
       let connection = x.Videocenter.connection;
 
       //// connection a room
@@ -169,7 +208,6 @@ export class RoomPage {
   }
   getDefaultAudio(){
     this.vc.config('default-audio',(value)=>{
-      console.log("Default-audio",value);
       this.selectedAudio = value;
       this.changeAudio(value);
     });
@@ -286,6 +324,7 @@ export class RoomPage {
       if ( file === void 0 ) return;
       this.file_progress = true;
       let ref = 'videocenter/' +  file.name;
+      this.data.namePhoto = file.name;
       this.file.upload( { file: file, ref: ref }, uploaded => {
           this.onFileUploaded( uploaded.url, uploaded.ref );
       },
@@ -300,6 +339,27 @@ export class RoomPage {
   onFileUploaded( url, ref ) {
       this.file_progress = false;
       this.urlPhoto = url;
+      this.data.urlPhoto = url;
+      this.data.refPhoto = ref;
+      this.postPhoto();
+  }
+  postPhoto() {
+    this.loader = true;
+    this.post
+    .sets( this.data )
+    .create( () => {
+        this.loader = false;
+        let alert = this.alertCtrl.create({
+            title: 'SUCCESS',
+            subTitle: 'Your post has been posted.',
+            buttons: ['OK']
+        });
+        alert.present();
+        console.log( 'onclickPost::Success' );
+    }, e => {
+        this.loader = false;
+        console.log( 'onclickPost::Failed' + e );
+    });
   }
   onClickPhoto() {
     alert("I Click the Photo!");
