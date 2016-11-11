@@ -5,6 +5,7 @@ import { LobbyPage } from '../lobby/lobby';
 
 import { Post } from '../../fireframe2/post';
 import { Data } from '../../fireframe2/data';
+import * as _ from 'lodash';
 export interface MESSAGELIST {
     messages: Array< x.MESSAGE >
 }
@@ -49,6 +50,9 @@ export class RoomPage {
   file_progress = null;
   loader: boolean = false;
   cordova: boolean = false;
+  // File Load
+  posts = [];
+  noMorePost: boolean = false;
   connectingToServer:string = 'Connecting to server...'
   constructor(
     public navCtrl: NavController, 
@@ -76,6 +80,10 @@ export class RoomPage {
         connection.openOrJoin( roomname );
       });
       this.listenEvents();
+      // File Load
+      this.loadPosts();
+      
+      // File Load
       // File Upload
       if ( this.postKey ) {
           console.log("PostEditPage:: post edit key=" + this.postKey);
@@ -121,6 +129,37 @@ export class RoomPage {
         };
       setTimeout(()=>{this.settings = true; this.showSettings()},600);
   }
+  // loadPosts
+  loadPosts( infinite? ) {
+    this.post
+      // .nextPage( data => {
+      //   console.log('loadPoss: ', data);
+      //   if ( infinite ) infinite.complete();
+      //   if ( ! _.isEmpty(data) ) this.displayPosts( data );
+      //   else {
+      //     this.noMorePost = true;
+      //     infinite.enable( false );
+      //   }
+      // },
+      .gets( data => {
+        if ( ! _.isEmpty(data) ) this.displayPosts( data );
+      },
+      e => {
+        console.log("fetch failed: ", e);
+      });
+  }
+  displayPosts( data ) {
+      for( let key of Object.keys(data).reverse() ) {
+        this.posts.push ( {key: key, value: data[key]} );
+      }
+  }
+ 
+  // loadPosts 
+  // Addons
+  onChangePhotoDisplay(url){
+    this.urlPhoto = url;
+  }
+  // Addons
   ngOnInit() {
     this.setCanvasSize(this.defaultCanvasSize,this.defaultCanvasSize);
   }

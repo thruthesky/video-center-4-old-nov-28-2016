@@ -44,7 +44,6 @@ page-room ion-content {
         width: $left_large_width;
     }
     .chatbox {
-        background-color:#e5e9f1;
         color:white;
         height: 140px;
         overflow: hidden;
@@ -54,7 +53,7 @@ page-room ion-content {
 #document {
     background-color: $colorblue;
     width: 100%;
-    color:white;
+
     input,p {
         color:white;
     }
@@ -68,6 +67,11 @@ page-room ion-content {
     @media all and ( min-width: $large_break ) {
         width: $left_large_width;
     }
+}
+.documentList {
+    overflow: hidden;
+    overflow-y: scroll;
+    height: 200px; 
 }
 .whiteboard-container {
     position:relative;

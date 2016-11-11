@@ -44,20 +44,36 @@
     </ion-list>
   </div><!--/chat-->
 
-  <ion-item id="document">
+  <div id="document">
     <p>Image</p>
     <div *ngIf=" urlPhoto " (click)="onClickPhoto()">
       <img [src]="urlPhoto">
-    </div>
-    <div *ngIf=" data?.urlPhoto ">
-      <button ion-button (click)="onClickDeletePhoto( data.refPhoto )">DELETE</button>
     </div>
     <input *ngIf=" ! cordova " type="file" (change)="onChangeFile($event)">
     <div *ngIf="position">
       <progress [value]="position" max="100"></progress>
     </div>
     <div *ngIf="loader">{{connectingToServer}}</div>
-  </ion-item><!--Document-->
+    <!--Load post-->
+    <ion-list class="documentList">
+      <!--<ion-card   *ngFor=" let post of posts; let i = index; " >
+        <div class="avatar">
+            <img src="{{ post.value.urlPhoto }}"/>
+        </div>
+        {{ post.value.namePhoto }}
+      </ion-card>-->
+
+      <ion-item  *ngFor=" let post of posts; " >
+        <div (click)="onChangePhotoDisplay(post.value.urlPhoto)">{{ post.value.namePhoto }} </div>
+      </ion-item>
+  </ion-list>
+
+
+  <h3 *ngIf=" noMorePost ">
+      There is no more posts.
+  </h3>
+    <!--Load post-->
+  </div><!--Document-->
   
   <div class="whiteboard-container">
     <canvas mycanvas id="mycanvas" [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
