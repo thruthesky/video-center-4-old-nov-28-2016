@@ -56,6 +56,8 @@ export class RoomPage {
   posts = [];
   noMorePost: boolean = false;
   connectingToServer:string = 'Connecting to server...'
+  // Addons
+  canvasPhoto: string = "x-assets/1.png";
   constructor(
     public navCtrl: NavController, 
     private vc: x.Videocenter,
@@ -376,7 +378,13 @@ export class RoomPage {
       let message = re[0];
       this.addMessage( message );         
     });
-      
+    this.events.subscribe( 'whiteboard', re => {
+      console.log("Whiteboard::listenEvents() =>  ", re );          
+      let data = re[0];
+      if ( data.command == 'image' ) {
+          this.changeCanvasPhoto(data.image);
+      }
+    });  
     
   }
   addMessage( message ) {
@@ -438,6 +446,19 @@ export class RoomPage {
     });
   }
   onClickPhoto() {
-    alert("I Click the Photo!");
+     this.vc.getRoomname().then( roomname => {
+        let data :any = { room_name : roomname };
+        data.command = "image";
+        data.image = this.urlPhoto;
+        this.vc.whiteboard( data,() => { 
+          console.log("Change Whiteboard Image");
+          
+        } );
+        this.changeCanvasPhoto(this.urlPhoto);
+      });
+    
+  }
+  changeCanvasPhoto(image) {
+    this.canvasPhoto = image;
   }
 }

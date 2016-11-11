@@ -80,24 +80,32 @@ page-room ion-content {
     height: 340px;
     @media all and ( min-width: $medium_break ) {
         position: absolute;
-        z-index: 1234;
+        z-index: 100;
         top: 0;
         left: $left_medium_width + 2px;
     }
     @media all and ( min-width: $large_break ) {
         position: absolute;
-        z-index: 1234;
+        z-index: 100;
         top: 0;
         left: $left_large_width + 2px;
     }
     canvas {
+        position: absolute;
         border:solid 1px black;
+        z-index: 101;
         /*width: 340px;
         height: 340px;*/
+    }
+    #canvas-image {
+        position: absolute;
+        z-index: 0;
+        width: 100%;
     }
 }
 /** buttons */
 #whiteboard-container i {
+    z-index: 102;
     display: block;
     position: absolute;
     top: 0.2em;
@@ -118,4 +126,5 @@ page-room ion-content {
     }
    
 }
+
 

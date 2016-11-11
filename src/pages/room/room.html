@@ -79,6 +79,9 @@
   </div><!--Document-->
   
   <div id="whiteboard-container">
+    <div id="canvas-image">
+      <img [src]="canvasPhoto">
+    </div>
     <canvas mycanvas id="mycanvas" [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
   <!--<canvas  width="{{ canvaswidth }}" height="{{ canvasheight }}"  mycanvas [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>-->
     
