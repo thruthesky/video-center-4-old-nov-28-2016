@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Platform, NavController, NavParams, AlertController, Events } from 'ionic-angular';
+import { Platform, NavController, NavParams, AlertController, ActionSheetController, Events } from 'ionic-angular';
 import * as x from '../../providers/videocenter';
 import { LobbyPage } from '../lobby/lobby';
 
@@ -21,12 +21,14 @@ export interface  PostEdit {
   templateUrl: 'room.html'
 })
 export class RoomPage {
-  
+  whiteboard_container:any;
   defaultCanvasSize:string = '340px';
   title: string;
   inputMessage: string;
   listMessage: MESSAGELIST = <MESSAGELIST> {};
-  settings:boolean;
+  settings:boolean = true;
+  chatDisplay:boolean = true;
+  documentDisplay:boolean = true;
   dmode:any;
   dsize:any;
   dcolor:any;
@@ -61,11 +63,12 @@ export class RoomPage {
     private post: Post,
     private platform: Platform,
     private alertCtrl: AlertController,
+    private actionSheetCtrl: ActionSheetController,
     private file: Data,
     private navParams: NavParams,) {
+      this.whiteboard_container = document.getElementById('whiteboard-container');
       if ( platform.is('cordova') ) this.cordova = true;
       this.postKey = navParams.get('postKey');
-      console.info('navParams:: ' , this.postKey);
       this.defaultAudio = false;
       this.defaultVideo = false;
       this.inputMessage = '';
@@ -127,7 +130,7 @@ export class RoomPage {
 
         //    videoLayout( Cookies.get('video-list-style') );
         };
-      setTimeout(()=>{this.settings = true; this.showSettings()},600);
+      setTimeout(()=>{ this.showSettings()},600);
   }
   // loadPosts
   loadPosts( infinite? ) {
@@ -158,6 +161,40 @@ export class RoomPage {
   // Addons
   onChangePhotoDisplay(url){
     this.urlPhoto = url;
+  }
+  showMiscellaneous() {
+    let actionSheet = this.actionSheetCtrl.create({
+      title: 'Miscellaneous',
+      buttons: [
+        {
+          text: 'Settings',
+          icon: 'settings',
+          handler: () => {
+            this.settings = ! this.settings;
+          }
+        },{
+          text: 'Chat',
+          icon: 'md-chatboxes',
+          handler: () => {
+            this.chatDisplay = ! this.chatDisplay;
+          }
+        },{
+          text: 'Document',
+          icon: 'ios-images',
+          handler: () => {
+            this.documentDisplay = ! this.documentDisplay;
+          }
+        },{
+          text: 'Cancel',
+          role: 'cancel',
+          icon: 'md-close',
+          handler: () => {
+            console.log('Cancel clicked');
+          }
+        }
+      ]
+    });
+    actionSheet.present();
   }
   // Addons
   ngOnInit() {

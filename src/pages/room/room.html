@@ -4,11 +4,14 @@
       Room {{ title }}
       
      
-    <button ion-button color="dark" (click)=" settings = ! settings " >
+    <button ion-button color="dark" (click)=" showMiscellaneous() " >
       <ion-icon name="settings" ></ion-icon>
-    </button>       
+    </button> 
+    <!--<button ion-button color="dark" (click)=" settings = ! settings " >
+      <ion-icon name="settings" ></ion-icon>
+    </button>       -->
     <button ion-button color="dark" (click)="onClickLobby()" >
-      <ion-icon name="ios-log-out"></ion-icon>
+      <ion-icon name="md-log-out"></ion-icon>
     </button>  
     </ion-title>
   </ion-navbar>
@@ -33,7 +36,7 @@
 
   </div>
   <div id="video-container"></div>
-  <div class="chat">
+  <div *ngIf= "chatDisplay" class="chat">
     <ion-item>
       <ion-label floating>Message</ion-label>
       <ion-input type="text" [(ngModel)]="inputMessage" (keyup.enter)="onSendMessage(inputMessage)"></ion-input>
@@ -44,7 +47,7 @@
     </ion-list>
   </div><!--/chat-->
 
-  <div id="document">
+  <div *ngIf= "documentDisplay" id="document">
     <p>Image</p>
     <div *ngIf=" urlPhoto " (click)="onClickPhoto()">
       <img [src]="urlPhoto">
@@ -75,7 +78,7 @@
     <!--Load post-->
   </div><!--Document-->
   
-  <div class="whiteboard-container">
+  <div id="whiteboard-container">
     <canvas mycanvas id="mycanvas" [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
   <!--<canvas  width="{{ canvaswidth }}" height="{{ canvasheight }}"  mycanvas [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>-->
     

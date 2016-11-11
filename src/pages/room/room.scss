@@ -71,9 +71,10 @@ page-room ion-content {
 .documentList {
     overflow: hidden;
     overflow-y: scroll;
-    height: 200px; 
+    max-height: 200px; 
 }
-.whiteboard-container {
+
+#whiteboard-container {
     position:relative;
     width: 340px;
     height: 340px;
@@ -96,7 +97,7 @@ page-room ion-content {
     }
 }
 /** buttons */
-.whiteboard-container i {
+#whiteboard-container i {
     display: block;
     position: absolute;
     top: 0.2em;
