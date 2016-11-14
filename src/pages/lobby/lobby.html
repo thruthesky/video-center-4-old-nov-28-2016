@@ -2,19 +2,46 @@
   <ion-navbar>
     <ion-title>
       Lobby  {{ title }}
+      <button ion-button color="dark" (click)=" settings = ! settings " >
+        <ion-icon name="settings" ></ion-icon>
+      </button> 
     </ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content>
+  <div *ngIf=" settings " id="settings">
+    <ion-item>
+      <ion-label>Select Video</ion-label>
+      <ion-select [(ngModel)]="selectedVideo" #video (ngModelChange)="changeVideo($event)">
+        <ion-option *ngFor="let video of videos" value="{{ video.value }}" >{{video.text}}</ion-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label>Select Audio</ion-label>
+      <ion-select [(ngModel)]="selectedAudio" #audio (ngModelChange)="changeAudio($event)">
+        <ion-option *ngFor="let audio of audios" value="{{ audio.value }}" >{{audio.text}}</ion-option>
+      </ion-select>
+    </ion-item>
+  </div>
+  <div id="video-container"></div>
   <ion-list inset>
 
     <ion-item>
-      <button ion-button (click)="onClickUpdateUsername()"  >Update Username</button>
-   
+       
+      <button ion-button  (click)="onClickUpdateUsername()" >
+        <ion-icon name="md-person-add" ></ion-icon>
+      </button> 
+      <button ion-button color="secondary" (click)="onClickCreateRoom()" >
+        <ion-icon name="ios-chatboxes-outline" ></ion-icon>
+      </button> 
+      <button ion-button color="dark" (click)="onClickLogout()" >
+        <ion-icon name="md-log-out" ></ion-icon>
+      </button>
+      <!--<button ion-button (click)="onClickUpdateUsername()"  >Update Username</button>
       <button ion-button (click)="onClickCreateRoom()"  color="secondary" >Create Room</button>
- 
-      <button ion-button (click)="onClickLogout()"  color="dark">Logout</button>
+      <button ion-button (click)="onClickLogout()"  color="dark">Logout</button>-->
+     
     </ion-item>
     
   </ion-list>  

@@ -87,6 +87,13 @@ connection.iceServers.push({
 
 
 
+  // change user id as socket id
+  /*
+    this.emit( 'changed-uuid', this.getSocket().id, () => {
+      console.log("changed-uuid: ", this.getSocket().id);
+    });
+    */
+
 
   }
   /**

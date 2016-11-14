@@ -1,43 +1,78 @@
 import { Component } from '@angular/core';
-import { NavController, Events } from 'ionic-angular';
+import { Platform, NavController, NavParams, AlertController, ActionSheetController, Events } from 'ionic-angular';
 import * as x from '../../providers/videocenter';
 import { LobbyPage } from '../lobby/lobby';
+
+import { Post } from '../../fireframe2/post';
+import { Data } from '../../fireframe2/data';
+import * as _ from 'lodash';
 export interface MESSAGELIST {
     messages: Array< x.MESSAGE >
+}
+
+export interface  PostEdit {
+    key : string;
+    namePhoto : string;
+    urlPhoto?: string;
+    refPhoto?: string;
 }
 @Component({
   selector: 'page-room',
   templateUrl: 'room.html'
 })
 export class RoomPage {
+  whiteboard_container:any;
+  defaultCanvasSize:string = '340px';
   title: string;
   inputMessage: string;
   listMessage: MESSAGELIST = <MESSAGELIST> {};
-  canvaswidth:string;
-  canvasheight:string;
-  settings;
-  dmode;
-  dsize;
-  dcolor;
-  DrawMode;
-  DrawSize;
-  DrawColor;
-  video_url;
-  audios = [];
-  videos = [];
-  oldvideo;
-  selectedAudio;
-  defaultAudio;
-  selectedVideo;
-  defaultVideo;
+  settings:boolean = true;
+  chatDisplay:boolean = true;
+  documentDisplay:boolean = true;
+  dmode:any;
+  dsize:any;
+  dcolor:any;
+  DrawMode:any;
+  DrawSize:any;
+  DrawColor:any;
+  video_url:any;
+  audios:any = [];
+  videos:any = [];
+  oldvideo:any;
+  selectedAudio:any;
+  defaultAudio:any;
+  selectedVideo:any;
+  defaultVideo:any;
+  // File upload
+  data : PostEdit = <PostEdit> {};
+  postKey: string;
+  urlPhoto: string = "x-assets/1.png";
+  position:number = 0;
+  progress = null;
+  file_progress = null;
+  loader: boolean = false;
+  cordova: boolean = false;
+  // File Load
+  posts = [];
+  noMorePost: boolean = false;
+  connectingToServer:string = 'Connecting to server...'
+  // Addons
+  canvasPhoto: string = "x-assets/1.png";
   constructor(
     public navCtrl: NavController, 
     private vc: x.Videocenter,
-    private events: Events ) {
+    private events: Events,
+    private post: Post,
+    private platform: Platform,
+    private alertCtrl: AlertController,
+    private actionSheetCtrl: ActionSheetController,
+    private file: Data,
+    private navParams: NavParams,) {
+      this.whiteboard_container = document.getElementById('whiteboard-container');
+      if ( platform.is('cordova') ) this.cordova = true;
+      this.postKey = navParams.get('postKey');
       this.defaultAudio = false;
       this.defaultVideo = false;
-      this.canvaswidth = "340px";
-      this.canvasheight = "340px";
       this.inputMessage = '';
       if ( this.listMessage[0] === void 0 ) {
         this.listMessage[0] = { messages: [] };
@@ -50,30 +85,141 @@ export class RoomPage {
         connection.openOrJoin( roomname );
       });
       this.listenEvents();
-    let connection = x.Videocenter.connection;
+      // File Load
+      this.loadPosts();
+      
 
-//// connection a room
-connection.onstream = (event) => {
-  //console.log('connection id: ' + connection.userid);
-  //console.log('event id: ' + event.userid);
-  //console.log(connection);
-  
-  // console.log('onstream : ', event);
-  let video = event.mediaElement;
-  // console.log( 'video: ', video);
+      // File Load
+      // File Upload
+      if ( this.postKey ) {
+          console.log("PostEditPage:: post edit key=" + this.postKey);
+          this.post
+            .set('key', this.postKey)
+            .get( snapValue => {
+              if( snapValue ) {
+                console.info('snapValue:: ', snapValue);
+                this.data.key = this.postKey ;
+                this.data.namePhoto = snapValue.namePhoto;
+                this.data.urlPhoto = snapValue.urlPhoto;
+                this.data.refPhoto = snapValue.refPhoto;
+                this.urlPhoto = this.data.urlPhoto;
+              }else {
+                console.log('Key Doesnt Exist');
+              }
 
-  let videos= document.getElementById('video-container');
-  videos.appendChild( video );
-  this.oldvideo = video;
-      ///
-  //    roomAddVideo( event );
+            },e =>{
+              console.info('Post get() fail on key:' + this.postKey + ', Error:' + e);
+            });
+        }
 
-  //    videoLayout( Cookies.get('video-list-style') );
-  };
-  setTimeout( ()=> { this.settings = true; this.showSettings() }, 600 );
-}
+      // File Upload
+      let connection = x.Videocenter.connection;
+
+      // A new user's video stream arrives
+      connection.onstream = (event) => this.addUserVideo( event );
+      
+      setTimeout(()=>{ this.showSettings()},600);
+  }
+  addUserVideo( event ) {
+        let connection = x.Videocenter.connection;
+        console.log('connection id: ' + connection.userid);
+        console.log('event id: ' + event.userid); // socket
+        //console.log(connection);
+        let me: string = 'you';
+        if ( connection.userid == event.userid ) me = 'me';
+        
+        console.log('onstream : ', event);
+        let video = event.mediaElement;
+        video.setAttribute('class', me);
+        console.log( 'video: ', video);
 
 
+
+        let videos= document.getElementById('video-container');
+        if ( me == 'me' ) {
+          videos.insertBefore(video, videos.firstChild);
+        }
+        else {
+          videos.appendChild( video );
+        }
+            ///
+        //    roomAddVideo( event );
+
+        //    videoLayout( Cookies.get('video-list-style') );
+        }
+  // loadPosts
+  loadPosts( infinite? ) {
+    this.post
+      // .nextPage( data => {
+      //   console.log('loadPoss: ', data);
+      //   if ( infinite ) infinite.complete();
+      //   if ( ! _.isEmpty(data) ) this.displayPosts( data );
+      //   else {
+      //     this.noMorePost = true;
+      //     infinite.enable( false );
+      //   }
+      // },
+      .gets( data => {
+        if ( ! _.isEmpty(data) ) this.displayPosts( data );
+      },
+      e => {
+        console.log("fetch failed: ", e);
+      });
+  }
+  displayPosts( data ) {
+      for( let key of Object.keys(data).reverse() ) {
+        this.posts.push ( {key: key, value: data[key]} );
+      }
+  }
+ 
+  // loadPosts 
+  // Addons
+  onChangePhotoDisplay(url){
+    this.urlPhoto = url;
+  }
+  showMiscellaneous() {
+    let actionSheet = this.actionSheetCtrl.create({
+      title: 'Miscellaneous',
+      buttons: [
+        {
+          text: 'Settings',
+          icon: 'settings',
+          handler: () => {
+            this.settings = ! this.settings;
+          }
+        },{
+          text: 'Chat',
+          icon: 'md-chatboxes',
+          handler: () => {
+            this.chatDisplay = ! this.chatDisplay;
+          }
+        },{
+          text: 'Document',
+          icon: 'ios-images',
+          handler: () => {
+            this.documentDisplay = ! this.documentDisplay;
+          }
+        },{
+          text: 'Cancel',
+          role: 'cancel',
+          icon: 'md-close',
+          handler: () => {
+            console.log('Cancel clicked');
+          }
+        }
+      ]
+    });
+    actionSheet.present();
+  }
+  // Addons
+  ngOnInit() {
+    this.setCanvasSize(this.defaultCanvasSize,this.defaultCanvasSize);
+  }
+  setCanvasSize(h, w) {
+     let mycanvas= document.getElementById('mycanvas');
+     mycanvas.setAttribute('height', h);
+     mycanvas.setAttribute('width', w);
+  }
   showSettings() {
     //////
     let connection = x.Videocenter.connection;
@@ -104,7 +250,8 @@ connection.onstream = (event) => {
                 /*
                 if(!this.defaultVideo){
                   this.defaultVideo = true;
-                  this.selectedVideo = video.value;
+                  // this.selectedVideo = video.value;
+                  this.vc.setConfig('default-video',video.value);
                 }
                 */
                 // console.log('audios:',this.videos);
@@ -129,9 +276,13 @@ connection.onstream = (event) => {
                 /*
                 if(!this.defaultAudio){
                   this.defaultAudio = true;
-                  this.selectedAudio = audio.value;
+                  // this.selectedVideo = video.value;
+                  this.vc.setConfig('default-audio',audio.value);
                 }
-                */
+                // if(!this.defaultAudio){
+                //   this.defaultAudio = true;
+                //   this.selectedAudio = audio.value;
+                // }
                 // console.log('audios:',this.audios);
                 // selected audio
                 // if(connection.mediaConstraints.audio.optional.length && connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
@@ -150,13 +301,11 @@ connection.onstream = (event) => {
                 */
             }
 
-            
-        } );
 
 
-        this.setDefaultAudio();
-        this.setDefaultVideo();
-
+        });
+        this.getDefaultAudio();
+        this.getDefaultVideo();
     });
 
     //////
@@ -173,13 +322,26 @@ connection.onstream = (event) => {
       this.changeVideo( value );
     } );
   }
+  getDefaultAudio(){
+    this.vc.config('default-audio',(value)=>{
+      this.selectedAudio = value;
+      this.changeAudio(value);
+    });
+  }
+  getDefaultVideo(){
+    this.vc.config('default-video',(value)=>{
+      this.selectedVideo = value;
+      this.changeVideo(value);
+    });
+  }
   changeVideo( videoSourceId ) {
     let connection = x.Videocenter.connection;
-    this.vc.setConfig('default-video', videoSourceId); // @warning what changing video fails?
- 
+    this.vc.setConfig('default-video',videoSourceId);
+    
     if(connection.mediaConstraints.video.optional.length && connection.attachStreams.length) {
         if(connection.mediaConstraints.video.optional[0].sourceId === videoSourceId) {
-            alert('Selected video device is already selected.');
+            // alert('Selected video device is already selected.');
+            console.log('Selected video device is already selected.');
             return;
         }
     }
@@ -196,8 +358,10 @@ connection.onstream = (event) => {
     }];
     
     let videos= document.getElementById('video-container');
-    videos.removeChild( this.oldvideo );
-    connection.captureUserMedia();
+    if(this.oldvideo){
+      videos.removeChild( this.oldvideo );
+      connection.captureUserMedia();
+    }  
   }
 
   onClickLobby() {
@@ -209,16 +373,28 @@ connection.onstream = (event) => {
       this.changeVideo( id );
   }
   
-  onChangeAudio( data ) {
+  changeAudio( audioSourceId ) {
     let connection = x.Videocenter.connection;
-    var audioSourceId = data;
-    this.vc.setConfig('default-audio', audioSourceId); // @warning what changing video fails?
+    this.vc.setConfig('default-audio',audioSourceId);
+
+
+
+    // check if there is audio selected or an audio is being used.
     if(connection.mediaConstraints.audio.optional.length && connection.attachStreams.length) {
+        // check if the audio that is using is the same as the user selected.
         if(connection.mediaConstraints.audio.optional[0].sourceId === audioSourceId) {
             alert('Selected audio device is already selected.');
+            console.log('Selected audio device is already selected.');
             return;
         }
     }
+
+    /**
+     * @note This comment is an assumtion. it is not fully understood !
+     * 
+     * - attachStreams may hold only streams that are playing right now.
+     * - it stops all playing audio.
+     */
     connection.attachStreams.forEach(function(stream) {
         stream.getAudioTracks().forEach(function(track) {
             stream.removeTrack(track);
@@ -227,13 +403,26 @@ connection.onstream = (event) => {
             }
         });
     });
+
+    // add new media stream.
     connection.mediaConstraints.audio.optional = [{
         sourceId: audioSourceId
     }];
     
-    let videos= document.getElementById('video-container');
-    videos.removeChild( this.oldvideo );
+    // remove previous video of the user.
+    //let videos= document.getElementById('video-container');
+    let video = document.getElementsByClassName('me')[0];
+    video.parentNode.removeChild( video );
     connection.captureUserMedia();
+
+
+
+    // re-open the user's video.
+    //if(this.oldvideo){
+      //videos.removeChild( this.oldvideo );
+      //connection.captureUserMedia();
+    //}  
+    
   }
   onSendMessage(message: string) {
     if(message != ""){
@@ -254,7 +443,13 @@ connection.onstream = (event) => {
       let message = re[0];
       this.addMessage( message );         
     });
-      
+    this.events.subscribe( 'whiteboard', re => {
+      console.log("Whiteboard::listenEvents() =>  ", re );          
+      let data = re[0];
+      if ( data.command == 'image' ) {
+          this.changeCanvasPhoto(data.image);
+      }
+    });  
     
   }
   addMessage( message ) {
@@ -271,5 +466,64 @@ connection.onstream = (event) => {
   eraseMode() {
     this.dmode = "e";
   }
- 
+
+  // File Upload
+  onChangeFile(event) {
+      let file = event.target.files[0];
+      if ( file === void 0 ) return;
+      this.file_progress = true;
+      let ref = 'videocenter/' +  file.name;
+      this.data.namePhoto = file.name;
+      this.file.upload( { file: file, ref: ref }, uploaded => {
+          this.onFileUploaded( uploaded.url, uploaded.ref );
+      },
+      e => {
+          this.file_progress = false;
+          alert(e);
+      },
+      percent => {
+          this.position = percent;
+      } );
+  }
+  onFileUploaded( url, ref ) {
+      this.file_progress = false;
+      this.urlPhoto = url;
+      this.data.urlPhoto = url;
+      this.data.refPhoto = ref;
+      this.postPhoto();
+  }
+  postPhoto() {
+    this.loader = true;
+    this.post
+    .sets( this.data )
+    .create( () => {
+        this.loader = false;
+        let alert = this.alertCtrl.create({
+            title: 'SUCCESS',
+            subTitle: 'Your post has been posted.',
+            buttons: ['OK']
+        });
+        alert.present();
+        console.log( 'onclickPost::Success' );
+    }, e => {
+        this.loader = false;
+        console.log( 'onclickPost::Failed' + e );
+    });
+  }
+  onClickPhoto() {
+     this.vc.getRoomname().then( roomname => {
+        let data :any = { room_name : roomname };
+        data.command = "image";
+        data.image = this.urlPhoto;
+        this.vc.whiteboard( data,() => { 
+          console.log("Change Whiteboard Image");
+          
+        } );
+        this.changeCanvasPhoto(this.urlPhoto);
+      });
+    
+  }
+  changeCanvasPhoto(image) {
+    this.canvasPhoto = image;
+  }
 }

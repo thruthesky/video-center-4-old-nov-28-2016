@@ -1,3 +1,10 @@
+$colorblue: #42bdec;
+.toolbar-background-md {
+    background: $colorblue;
+}
+.toolbar-title-md {
+    color:white;
+}
 page-lobby {
     .chatbox {
         background-color:#e5e9f1;

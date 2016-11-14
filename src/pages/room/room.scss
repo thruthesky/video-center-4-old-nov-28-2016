@@ -2,14 +2,22 @@ $medium_break: 510px;
 $left_medium_width: 170px;
 $large_break: 680px;
 $left_large_width: 226px;
-
+$colorblue: #42bdec;
+.toolbar-background-md {
+    background: $colorblue;
+}
+.toolbar-title-md {
+    color:white;
+}
 page-room ion-content {
     position: relative;
-    @media all and ( min-width: $medium_break ) {
-    width: $left_medium_width;
-    }
-    @media all and ( min-width: $large_break ) {
-        width: $left_large_width;
+    #settings{
+        @media all and ( min-width: $medium_break ) {
+            width: $left_medium_width;
+        }
+        @media all and ( min-width: $large_break ) {
+            width: $left_large_width;
+        }
     }
 }
 #video-container {
@@ -25,27 +33,79 @@ page-room ion-content {
         width: $left_large_width;
     }
 }
-.whiteboard-container {
+
+
+.chat {
+    width: 100%;
+    @media all and ( min-width: $medium_break ) {
+        width: $left_medium_width;
+    }
+    @media all and ( min-width: $large_break ) {
+        width: $left_large_width;
+    }
+    .chatbox {
+        color:white;
+        height: 140px;
+        overflow: hidden;
+        overflow-y: scroll;        
+    }
+}
+#document {
+    background-color: $colorblue;
+    width: 100%;
+
+    input,p {
+        color:white;
+    }
+    @media all and ( min-width: $medium_break ) {
+        width: $left_medium_width;
+        input {
+            color:white;
+            font-size:12px;
+        }
+    }
+    @media all and ( min-width: $large_break ) {
+        width: $left_large_width;
+    }
+}
+.documentList {
+    overflow: hidden;
+    overflow-y: scroll;
+    max-height: 200px; 
+}
+
+#whiteboard-container {
     position:relative;
     width: 340px;
     height: 340px;
     @media all and ( min-width: $medium_break ) {
         position: absolute;
-        z-index: 1234;
+        z-index: 100;
         top: 0;
         left: $left_medium_width + 2px;
     }
     @media all and ( min-width: $large_break ) {
+        position: absolute;
+        z-index: 100;
+        top: 0;
         left: $left_large_width + 2px;
     }
     canvas {
+        position: absolute;
         border:solid 1px black;
+        z-index: 101;
         /*width: 340px;
         height: 340px;*/
     }
+    #canvas-image {
+        position: absolute;
+        z-index: 0;
+        width: 100%;
+    }
 }
 /** buttons */
-.whiteboard-container i {
+#whiteboard-container i {
+    z-index: 102;
     display: block;
     position: absolute;
     top: 0.2em;
@@ -67,19 +127,4 @@ page-room ion-content {
    
 }
 
-.chat {
-    width: 100%;
-    @media all and ( min-width: $medium_break ) {
-        width: $left_medium_width;
-    }
-    @media all and ( min-width: $large_break ) {
-        width: $left_large_width;
-    }
-    .chatbox {
-        background-color:#e5e9f1;
-        color:white;
-        height: 140px;
-        overflow: hidden;
-        overflow-y: scroll;        
-    }
-}
+
