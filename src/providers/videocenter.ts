@@ -159,10 +159,19 @@ connection.iceServers.push({
   }
   
   
+  /**
+   * Sets config. key & value
+   */
   setConfig( key:string, value:string ) {
     this.storage.set( key, value );
   }
-  config( key: string, callback ) {
+  getConfig( key: string, callback: ( value: string ) => void ) {
+    this.config( key, callback );
+  }
+  /**
+   * Gets a config based on the key.
+   */
+  config( key: string, callback: ( value: string) => void ) {
     this.storage .get( key )
       .then( re => callback( re ) );  
   }
