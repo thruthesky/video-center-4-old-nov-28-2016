@@ -38,7 +38,6 @@ export class RoomPage {
   video_url:any;
   audios:any = [];
   videos:any = [];
-  oldvideo:any;
   selectedAudio:any;
   defaultAudio:any;
   selectedVideo:any;
@@ -88,7 +87,6 @@ export class RoomPage {
       // File Load
       this.loadPosts();
       
-
       // File Load
       // File Upload
       if ( this.postKey ) {
@@ -118,35 +116,33 @@ export class RoomPage {
       // A new user's video stream arrives
       connection.onstream = (event) => this.addUserVideo( event );
       
-      setTimeout(()=>{ this.showSettings()},600);
+      setTimeout(()=>{ this.showSettings()},1000);
   }
   addUserVideo( event ) {
-        let connection = x.Videocenter.connection;
-        console.log('connection id: ' + connection.userid);
-        console.log('event id: ' + event.userid); // socket
-        //console.log(connection);
-        let me: string = 'you';
-        if ( connection.userid == event.userid ) me = 'me';
-        
-        console.log('onstream : ', event);
-        let video = event.mediaElement;
-        video.setAttribute('class', me);
-        console.log( 'video: ', video);
+    let connection = x.Videocenter.connection;
+    console.log('connection id: ' + connection.userid);
+    console.log('event id: ' + event.userid); // socket
+    //console.log(connection);
+    let me: string = 'you';
+    if ( connection.userid == event.userid ) me = 'me';
+    
+    console.log('onstream : ', event);
+    let video = event.mediaElement;
+    video.setAttribute('class', me);
+    console.log( 'video: ', video);
 
+    let videos= document.getElementById('video-container');
+    if ( me == 'me' ) {
+      videos.insertBefore(video, videos.firstChild);
+    }
+    else {
+      videos.appendChild( video );
+    }
+        ///
+    //    roomAddVideo( event );
 
-
-        let videos= document.getElementById('video-container');
-        if ( me == 'me' ) {
-          videos.insertBefore(video, videos.firstChild);
-        }
-        else {
-          videos.appendChild( video );
-        }
-            ///
-        //    roomAddVideo( event );
-
-        //    videoLayout( Cookies.get('video-list-style') );
-        }
+    //    videoLayout( Cookies.get('video-list-style') );
+  }
   // loadPosts
   loadPosts( infinite? ) {
     this.post
@@ -229,98 +225,42 @@ export class RoomPage {
      */
     connection.DetectRTC.load(() => {
         connection.DetectRTC.MediaDevices.forEach((device) => {
-          /*
-            if(document.getElementById(device.id)) {
-                return;
-            }
-            */
+      
             if(device.kind.indexOf('video') !== -1) {
-                // var option = document.createElement('option');
-                // option.id = device.id;
-                // option.innerHTML = device.label || device.id;
-                // option.value = device.id;
-                //videoDevices.appendChild(option);
-                // console.log('video: ', option);
+               
                 let video = {
                   text: device.label || device.id,
                   value: device.id
                 };
                 
                 this.videos.push( video );
-                /*
                 if(!this.defaultVideo){
                   this.defaultVideo = true;
-                  // this.selectedVideo = video.value;
                   this.vc.setConfig('default-video',video.value);
                 }
-                */
-                // console.log('audios:',this.videos);
-                // if(connection.mediaConstraints.video.optional.length && connection.mediaConstraints.video.optional[0].sourceId === device.id) {
-                //     option.selected = true;
-                // }
+         
             }
             if(device.kind === 'audioinput') {
-                //var option = document.createElement('option');
-                //option.id = device.id;
-                //option.innerHTML = device.label || device.id;
-                //option.value = device.id;
-                //console.log('audio: ', option);
-                //audioDevices.appendChild(option);
                 let audio = {
                     text: device.label || device.id,
                     value: device.id
                   };
-          
-                
                 this.audios.push( audio );
-                /*
                 if(!this.defaultAudio){
                   this.defaultAudio = true;
-                  // this.selectedVideo = video.value;
                   this.vc.setConfig('default-audio',audio.value);
                 }
-                // if(!this.defaultAudio){
-                //   this.defaultAudio = true;
-                //   this.selectedAudio = audio.value;
-                // }
-                // console.log('audios:',this.audios);
-                // selected audio
-                // if(connection.mediaConstraints.audio.optional.length && connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
-                //     option.selected = true;
-                // }
-                /*
                 if(connection.mediaConstraints.audio.optional.length && connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
                     console.log(device.id);
                 }
-                */
-                /*
-                if (connection.mediaConstraints.audio.optional) {
-                  let audio = connection.mediaConstraints.audio.optional;
-                  console.log('audio:', device.id);
-                }
-                */
             }
-
-
-
         });
         this.getDefaultAudio();
         this.getDefaultVideo();
     });
 
-    //////
-  }
 
-  setDefaultAudio() {
-    this.vc.getConfig('default-audio', value => {
-      if ( value ) this.selectedAudio = value;
-    } );
-  }
-  setDefaultVideo() {
-    this.vc.getConfig('default-video', value => {
-      if ( value ) this.selectedVideo = value;
-      this.changeVideo( value );
-    } );
+    //////
   }
   getDefaultAudio(){
     this.vc.config('default-audio',(value)=>{
@@ -333,6 +273,11 @@ export class RoomPage {
       this.selectedVideo = value;
       this.changeVideo(value);
     });
+  }
+  onClickLobby() {
+    this.vc.leaveRoom(()=> {
+      this.navCtrl.setRoot( LobbyPage );
+    });    
   }
   changeVideo( videoSourceId ) {
     let connection = x.Videocenter.connection;
@@ -357,44 +302,25 @@ export class RoomPage {
         sourceId: videoSourceId
     }];
     
-    let videos= document.getElementById('video-container');
-    if(this.oldvideo){
-      videos.removeChild( this.oldvideo );
+    let video = document.getElementsByClassName('me')[0];
+    console.log("Vidd:",video);
+    if(video) {
+      video.parentNode.removeChild( video );
       connection.captureUserMedia();
-    }  
-  }
-
-  onClickLobby() {
-    this.vc.leaveRoom(()=> {
-      this.navCtrl.setRoot( LobbyPage );
-    });    
-  }
-  onChangeVideo( id ) {
-      this.changeVideo( id );
+    }
+    
   }
   
   changeAudio( audioSourceId ) {
     let connection = x.Videocenter.connection;
     this.vc.setConfig('default-audio',audioSourceId);
-
-
-
-    // check if there is audio selected or an audio is being used.
     if(connection.mediaConstraints.audio.optional.length && connection.attachStreams.length) {
-        // check if the audio that is using is the same as the user selected.
         if(connection.mediaConstraints.audio.optional[0].sourceId === audioSourceId) {
-            alert('Selected audio device is already selected.');
+            // alert('Selected audio device is already selected.');
             console.log('Selected audio device is already selected.');
             return;
         }
     }
-
-    /**
-     * @note This comment is an assumtion. it is not fully understood !
-     * 
-     * - attachStreams may hold only streams that are playing right now.
-     * - it stops all playing audio.
-     */
     connection.attachStreams.forEach(function(stream) {
         stream.getAudioTracks().forEach(function(track) {
             stream.removeTrack(track);
@@ -403,25 +329,16 @@ export class RoomPage {
             }
         });
     });
-
-    // add new media stream.
     connection.mediaConstraints.audio.optional = [{
         sourceId: audioSourceId
     }];
     
-    // remove previous video of the user.
-    //let videos= document.getElementById('video-container');
     let video = document.getElementsByClassName('me')[0];
-    video.parentNode.removeChild( video );
-    connection.captureUserMedia();
-
-
-
-    // re-open the user's video.
-    //if(this.oldvideo){
-      //videos.removeChild( this.oldvideo );
-      //connection.captureUserMedia();
-    //}  
+    console.log("Vidd:",video);
+    if(video) {
+      video.parentNode.removeChild( video )
+      connection.captureUserMedia();
+    }
     
   }
   onSendMessage(message: string) {
