@@ -136,7 +136,7 @@ export class RoomPage {
       // A new user's video stream arrives
       connection.onstream = (event) => this.addUserVideo( event );
       console.log("TESTING");
-      // setTimeout(()=>{ this.showSettings()},1000);
+      setTimeout(()=>{ this.showSettings()},1000);
   }
   addUserVideo( event ) {
     let connection = x.Videocenter.connection;
@@ -203,23 +203,23 @@ export class RoomPage {
                 }
             }
         });
+        
         this.getDefaultAudio();
         this.getDefaultVideo();
     });
-
-
-    //////
   }
   getDefaultAudio(){
     this.vc.config('default-audio',(value)=>{
       this.selectedAudio = value;
-      this.changeAudio(value);
+      // Testing purpose for fixing the bugs 
+      // this.changeAudio(value);
     });
   }
   getDefaultVideo(){
     this.vc.config('default-video',(value)=>{
       this.selectedVideo = value;
-      this.changeVideo(value);
+      // Testing purpose for fixing the bugs 
+      // this.changeVideo(value);
     });
   }
   onClickLobby() {
@@ -255,7 +255,6 @@ export class RoomPage {
     
     if(connection.mediaConstraints.video.optional.length && connection.attachStreams.length) {
         if(connection.mediaConstraints.video.optional[0].sourceId === videoSourceId) {
-          if(this.firstChangeVideo) return;
             alert('Selected video device is already selected.');
             return;
         }
@@ -294,7 +293,6 @@ export class RoomPage {
     this.vc.setConfig('default-audio',audioSourceId);
     if(connection.mediaConstraints.audio.optional.length && connection.attachStreams.length) {
         if(connection.mediaConstraints.audio.optional[0].sourceId === audioSourceId) {
-            if(this.firstChangeAudio) return;
             alert('Selected audio device is already selected.');
             return;
         }
