@@ -195,7 +195,6 @@ export class MycanvasDirective {
       this.broadcastClearCanvas();
     });
     this.events.subscribe( 'whiteboard', re => {
-      console.log("Whiteboard::listenEvents() =>  ", re );          
       let data = re[0];
       if ( data.command == 'draw' ) {
           this.draw_on_canvas(data);

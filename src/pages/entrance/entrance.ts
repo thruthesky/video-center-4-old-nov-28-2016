@@ -23,19 +23,22 @@ export class EntrancePage {
     public alertCtrl: AlertController,
     private vc: x.Videocenter ) {
       this.settings = true;
-      let connection = x.Videocenter.connection;
+      // let connection = x.Videocenter.connection;
       //////////////////////
       // For Testing purpose only delete later
-      connection.openOrJoin( "Testing" );
+      // connection.openOrJoin( "Testing" );
       //////////////////////
       
-      connection.onstream = (event) => {
-        let video = event.mediaElement;
-        let videos= document.getElementById('video-container');
-        videos.appendChild( video );
-        this.oldvideo = video;
-        };
-      setTimeout(()=>{this.settings = true; this.showSettings()},600);
+      //////////////////////
+      // connection.onstream = (event) => {
+      //   let video = event.mediaElement;
+      //   let videos= document.getElementById('video-container');
+      //   videos.appendChild( video );
+      //   this.oldvideo = video;
+      //   };
+      // setTimeout(()=>{this.settings = true; this.showSettings()},600);
+      //////////////////////
+
   }
   showSettings() {
     let connection = x.Videocenter.connection;

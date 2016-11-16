@@ -57,6 +57,10 @@ export class RoomPage {
   connectingToServer:string = 'Connecting to server...'
   // Addons
   canvasPhoto: string = "x-assets/1.png";
+  streamId:string = '';
+  userId:string = '';
+  firstChangeVideo:boolean = false;
+  firstChangeAudio:boolean = false;
   constructor(
     public navCtrl: NavController, 
     private vc: x.Videocenter,
@@ -67,6 +71,11 @@ export class RoomPage {
     private actionSheetCtrl: ActionSheetController,
     private file: Data,
     private navParams: NavParams,) {
+      let connection = x.Videocenter.connection;
+      connection.sdpConstraints.mandatory = {
+          OfferToReceiveAudio: true,
+          OfferToReceiveVideo: true
+      };
       this.whiteboard_container = document.getElementById('whiteboard-container');
       if ( platform.is('cordova') ) this.cordova = true;
       this.postKey = navParams.get('postKey');
@@ -81,13 +90,27 @@ export class RoomPage {
         let data :any = { room_name : roomname };
         data.command = "history";
         this.vc.whiteboard( data,() => { console.log("get whiteboard history")} );
-        connection.openOrJoin( roomname );
+     
+        connection.checkPresence(roomname, (isRoomEists, roomid) => {
+            if(isRoomEists) {
+                console.log("I Join a room");
+                connection.join(roomid);
+            }
+            else {
+              console.log("I Open a room");
+                connection.open(roomid);
+            }
+        });
+    
+        console.log("Connection:",connection);
       });
+   
       this.listenEvents();
+     
       // File Load
       this.loadPosts();
       
-      // File Load
+  
       // File Upload
       if ( this.postKey ) {
           console.log("PostEditPage:: post edit key=" + this.postKey);
@@ -110,104 +133,29 @@ export class RoomPage {
             });
         }
 
-      // File Upload
-      let connection = x.Videocenter.connection;
-
       // A new user's video stream arrives
       connection.onstream = (event) => this.addUserVideo( event );
-      
-      setTimeout(()=>{ this.showSettings()},1000);
+      console.log("TESTING");
+      // setTimeout(()=>{ this.showSettings()},1000);
   }
   addUserVideo( event ) {
     let connection = x.Videocenter.connection;
-    console.log('connection id: ' + connection.userid);
-    console.log('event id: ' + event.userid); // socket
-    //console.log(connection);
     let me: string = 'you';
     if ( connection.userid == event.userid ) me = 'me';
-    
-    console.log('onstream : ', event);
     let video = event.mediaElement;
     video.setAttribute('class', me);
-    console.log( 'video: ', video);
-
     let videos= document.getElementById('video-container');
     if ( me == 'me' ) {
       videos.insertBefore(video, videos.firstChild);
+      this.streamId = event.streamid;
+      this.userId = event.userId;
     }
     else {
       videos.appendChild( video );
     }
-        ///
-    //    roomAddVideo( event );
 
-    //    videoLayout( Cookies.get('video-list-style') );
   }
-  // loadPosts
-  loadPosts( infinite? ) {
-    this.post
-      // .nextPage( data => {
-      //   console.log('loadPoss: ', data);
-      //   if ( infinite ) infinite.complete();
-      //   if ( ! _.isEmpty(data) ) this.displayPosts( data );
-      //   else {
-      //     this.noMorePost = true;
-      //     infinite.enable( false );
-      //   }
-      // },
-      .gets( data => {
-        if ( ! _.isEmpty(data) ) this.displayPosts( data );
-      },
-      e => {
-        console.log("fetch failed: ", e);
-      });
-  }
-  displayPosts( data ) {
-      for( let key of Object.keys(data).reverse() ) {
-        this.posts.push ( {key: key, value: data[key]} );
-      }
-  }
- 
-  // loadPosts 
-  // Addons
-  onChangePhotoDisplay(url){
-    this.urlPhoto = url;
-  }
-  showMiscellaneous() {
-    let actionSheet = this.actionSheetCtrl.create({
-      title: 'Miscellaneous',
-      buttons: [
-        {
-          text: 'Settings',
-          icon: 'settings',
-          handler: () => {
-            this.settings = ! this.settings;
-          }
-        },{
-          text: 'Chat',
-          icon: 'md-chatboxes',
-          handler: () => {
-            this.chatDisplay = ! this.chatDisplay;
-          }
-        },{
-          text: 'Document',
-          icon: 'ios-images',
-          handler: () => {
-            this.documentDisplay = ! this.documentDisplay;
-          }
-        },{
-          text: 'Cancel',
-          role: 'cancel',
-          icon: 'md-close',
-          handler: () => {
-            console.log('Cancel clicked');
-          }
-        }
-      ]
-    });
-    actionSheet.present();
-  }
-  // Addons
+  
   ngOnInit() {
     this.setCanvasSize(this.defaultCanvasSize,this.defaultCanvasSize);
   }
@@ -275,9 +223,31 @@ export class RoomPage {
     });
   }
   onClickLobby() {
-    this.vc.leaveRoom(()=> {
-      this.navCtrl.setRoot( LobbyPage );
-    });    
+    this.firstChangeVideo = false;
+    this.firstChangeAudio = false;
+    let connection = x.Videocenter.connection;
+    //For disconnecting the user from room
+    connection.getAllParticipants().forEach((p) =>{
+      connection.disconnectWith(p); // optional but suggested
+    });
+    //Stop the streaming of video
+    connection.attachStreams.forEach((stream) =>{
+        stream.stop(); // optional
+    });
+    
+    // connection.closeSocket(); // strongly recommended
+    this.vc.getRoomname().then( roomname => {
+     
+         this.vc.leaveRoom(()=> {
+          this.navCtrl.setRoot( LobbyPage );
+        });  
+      });
+  }
+  removeVideoStream( data ) {
+    let video = document.getElementById(data.streamId);
+    console.log("remover video",video);
+    if(!video) return;
+    video.parentNode.removeChild(video);
   }
   changeVideo( videoSourceId ) {
     let connection = x.Videocenter.connection;
@@ -285,30 +255,38 @@ export class RoomPage {
     
     if(connection.mediaConstraints.video.optional.length && connection.attachStreams.length) {
         if(connection.mediaConstraints.video.optional[0].sourceId === videoSourceId) {
-            // alert('Selected video device is already selected.');
-            console.log('Selected video device is already selected.');
+          if(this.firstChangeVideo) return;
+            alert('Selected video device is already selected.');
             return;
         }
     }
-    connection.attachStreams.forEach(function(stream) {
-        stream.getVideoTracks().forEach(function(track) {
-            stream.removeTrack(track);
-            if(track.stop) {
-                track.stop();
-            }
+    if(this.firstChangeVideo) {
+      connection.attachStreams.forEach((stream) =>{
+        stream.getVideoTracks().forEach((track) =>{
+          stream.removeTrack(track);
+          if(track.stop) {
+              track.stop();
+          }
         });
-    });
+      });
+      // connection.attachStreams.forEach((stream) =>{
+      //   stream.stop(); // optional
+      // });
+    }
+    else {
+      this.firstChangeVideo = true;
+    }
+  
+    
     connection.mediaConstraints.video.optional = [{
         sourceId: videoSourceId
     }];
     
     let video = document.getElementsByClassName('me')[0];
-    console.log("Vidd:",video);
     if(video) {
       video.parentNode.removeChild( video );
       connection.captureUserMedia();
     }
-    
   }
   
   changeAudio( audioSourceId ) {
@@ -316,25 +294,34 @@ export class RoomPage {
     this.vc.setConfig('default-audio',audioSourceId);
     if(connection.mediaConstraints.audio.optional.length && connection.attachStreams.length) {
         if(connection.mediaConstraints.audio.optional[0].sourceId === audioSourceId) {
-            // alert('Selected audio device is already selected.');
-            console.log('Selected audio device is already selected.');
+            if(this.firstChangeAudio) return;
+            alert('Selected audio device is already selected.');
             return;
         }
     }
-    connection.attachStreams.forEach(function(stream) {
-        stream.getAudioTracks().forEach(function(track) {
-            stream.removeTrack(track);
-            if(track.stop) {
-                track.stop();
-            }
+
+    if(this.firstChangeAudio) {
+      connection.attachStreams.forEach((stream) =>{
+        stream.getAudioTracks().forEach((track) =>{
+          stream.removeTrack(track);
+          if(track.stop) {
+              track.stop();
+          }
         });
-    });
+        // connection.attachStreams.forEach((stream) =>{
+        //   stream.stop(); // optional
+        // });
+      });
+    }
+    else {
+      this.firstChangeAudio = true;
+    }
+    
     connection.mediaConstraints.audio.optional = [{
         sourceId: audioSourceId
     }];
     
     let video = document.getElementsByClassName('me')[0];
-    console.log("Vidd:",video);
     if(video) {
       video.parentNode.removeChild( video )
       connection.captureUserMedia();
@@ -361,11 +348,11 @@ export class RoomPage {
       this.addMessage( message );         
     });
     this.events.subscribe( 'whiteboard', re => {
-      console.log("Whiteboard::listenEvents() =>  ", re );          
       let data = re[0];
       if ( data.command == 'image' ) {
           this.changeCanvasPhoto(data.image);
       }
+     
     });  
     
   }
@@ -442,5 +429,60 @@ export class RoomPage {
   }
   changeCanvasPhoto(image) {
     this.canvasPhoto = image;
+  }
+  // loadPosts
+  loadPosts( infinite? ) {
+    this.post
+      .gets( data => {
+        if ( ! _.isEmpty(data) ) this.displayPosts( data );
+      },
+      e => {
+        console.log("fetch failed: ", e);
+      });
+  }
+  displayPosts( data ) {
+      for( let key of Object.keys(data).reverse() ) {
+        this.posts.push ( {key: key, value: data[key]} );
+      }
+  }
+ 
+  // loadPosts 
+  // Addons
+  onChangePhotoDisplay(url){
+    this.urlPhoto = url;
+  }
+  showMiscellaneous() {
+    let actionSheet = this.actionSheetCtrl.create({
+      title: 'Miscellaneous',
+      buttons: [
+        {
+          text: 'Settings',
+          icon: 'settings',
+          handler: () => {
+            this.settings = ! this.settings;
+          }
+        },{
+          text: 'Chat',
+          icon: 'md-chatboxes',
+          handler: () => {
+            this.chatDisplay = ! this.chatDisplay;
+          }
+        },{
+          text: 'Document',
+          icon: 'ios-images',
+          handler: () => {
+            this.documentDisplay = ! this.documentDisplay;
+          }
+        },{
+          text: 'Cancel',
+          role: 'cancel',
+          icon: 'md-close',
+          handler: () => {
+            console.log('Cancel clicked');
+          }
+        }
+      ]
+    });
+    actionSheet.present();
   }
 }

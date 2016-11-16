@@ -51,17 +51,17 @@ export class LobbyPage {
         console.log('LobbyPage::constructor() vc.userList callback(): ', re);
         this.showRoomList( re );
       })
-      connection.openOrJoin( x.LobbyRoomName );
+      // connection.openOrJoin( x.LobbyRoomName );
     });    
     this.listenEvents();
-    let connection = x.Videocenter.connection;
-    connection.onstream = (event) => {
-      let video = event.mediaElement;
-      let videos= document.getElementById('video-container');
-      videos.appendChild( video );
-      this.oldvideo = video;
-      };
-    setTimeout(()=>{this.settings = true; this.showSettings()},600);  
+    // let connection = x.Videocenter.connection;
+    // connection.onstream = (event) => {
+    //   let video = event.mediaElement;
+    //   let videos= document.getElementById('video-container');
+    //   videos.appendChild( video );
+    //   this.oldvideo = video;
+    //   };
+    // setTimeout(()=>{this.settings = true; this.showSettings()},600);  
 
 
   }
