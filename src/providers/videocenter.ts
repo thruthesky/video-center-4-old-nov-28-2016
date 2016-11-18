@@ -119,6 +119,14 @@ connection.iceServers.push({
       console.log("socket.on('leave-room') : ", re);
       this.events.publish( 'leave-room', re );
     });
+    socket.on('room-cast', re => {
+      console.log("socket.on('room-cast') : ", re);
+      this.events.publish( 'room-cast', re );
+    });
+    socket.on('you-are-new-owner', re => {
+      console.log("socket.on('you-are-new-owner') : ", re);
+      this.events.publish( 'you-are-new-owner', re );
+    });
     socket.on('chatMessage', re => {
       this.events.publish( 'chatMessage', re );
     });
@@ -200,6 +208,10 @@ connection.iceServers.push({
       this.setConfig('roomname', roomname);
       callback( re );
     });
+  }
+  // Room Cast
+  roomCast( data ) {
+    this.emit('room-cast',data);
   }
 
   /**

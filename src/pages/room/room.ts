@@ -92,6 +92,7 @@ export class RoomPage {
         this.vc.whiteboard( data,() => { console.log("get whiteboard history")} );
      
         connection.checkPresence(roomname, (isRoomEists, roomid) => {
+          console.log("I WILL JOIN:",roomid);
             if(isRoomEists) {
                 console.log("I Join a room");
                 connection.join(roomid);
@@ -137,6 +138,121 @@ export class RoomPage {
       connection.onstream = (event) => this.addUserVideo( event );
       console.log("TESTING");
       setTimeout(()=>{ this.showSettings()},1000);
+  }
+  //Testing
+  socketio( data ) {
+    console.log( data );
+  }
+  reConnect( data ) {
+    let connection = x.Videocenter.connection;
+    
+    //Remove old Stream
+    connection.getAllParticipants().forEach((p) =>{
+      connection.disconnectWith(p); // optional but suggested
+    });
+    //Stop the streaming of video
+    connection.attachStreams.forEach((stream) =>{
+        stream.stop(); // optional
+    });
+    //open new room
+    setTimeout(()=>{
+      console.log("I will join:", data.roomname);
+      connection.connect(data.roomname);
+      console.log("I connect again to:)", data.roomname);
+    },1000);
+  }
+  newOwner( userdata ) {
+    let connection = x.Videocenter.connection;
+    // most importantly
+    connection.isInitiator = true;
+    
+    //Remove old Stream
+    connection.getAllParticipants().forEach((p) =>{
+      connection.disconnectWith(p); // optional but suggested
+    });
+    //Stop the streaming of video
+    connection.attachStreams.forEach((stream) =>{
+        stream.stop(); // optional
+    });
+    //open new room
+    setTimeout(()=>{
+      console.log("I will join:",userdata.room);
+      connection.open(userdata.room);
+      // connection.renegotiate();
+      console.log("I become the new Owner");
+      //testing only
+      
+      setTimeout(()=>{
+        let data = { command: "reconnect", roomname : userdata.room};
+        this.vc.roomCast( data );
+        alert("I become the new Owner");
+      },1000);
+    },2000);
+ 
+    
+    
+
+  //Muaz Khan code 
+  // var sessions = {};
+
+
+  // io.sockets.on('connection', function(socket) {
+  //     socket.on('new-room', function(sd) {
+  //             socket.id = sd.userid;
+  //             sd.users = {};
+  //             sessions[sd.userid] = sd;
+  //       });
+  //       socket.on('join-room', function(ownerid, callback) {
+  //             if(sessions[ownerid]) {
+  //                   sessions[ownerid][socket.id] = socket.id;
+  //                   callback(sessions[ownerid]);
+  //             }
+  //             // else ---- use setTimeout to watch until room is created
+  //             // or auto create the room
+  //       });
+  //       socket.on('disconnect', function() {
+  //           if(sessions[socket.id]) {
+  //               var firstUser;
+  //               for(var user in socket.users) {
+  //                     if(user != socket.id) {
+  //                           firstUser = user;
+  //                           continue;
+  //                     }
+  //               }
+  //               if(firstUser) {
+  //                     socket.id = firstUser; // shift ownership
+  //                     socket.emit('you-are-new-owner', sessions[firstUser]);
+  //               }
+  //           }
+  //       });
+  //     });
+  //     Your browser code:
+  //     socket.on('you-are-new-owner', function(sd) {
+  //         connection.sessionDescription = sd;
+  //         connection.userid = sd.userid;
+  //         connection.sessionid = sd.sessionid;
+  //         connection.extra = sd.extra;
+  //         connection.session = sd.session;
+  //         // most importantly
+  //         connection.isInitiator = true;
+  //     });
+  //     // to open room
+  //     btnOpenRoom.onclick = function() {
+  //     connection.open({
+  //         dontTransmit: true,
+  //         onMediaCaptured: function() {
+  //               socket.emit('new-room', connection.sessionDescription);
+  //         }
+  //     });
+  //     };
+  //     // to join room owner
+  //     btnJoinRoomOwner.onclick = function() {
+  //     socket.emit('owner-id', function(sd) {
+  //         connection.join(sd);
+  //     });
+  //     };
+
+
   }
   addUserVideo( event ) {
     let connection = x.Videocenter.connection;
@@ -226,8 +342,14 @@ export class RoomPage {
     this.firstChangeVideo = false;
     this.firstChangeAudio = false;
     let connection = x.Videocenter.connection;
+    console.log("my connection:",connection);
+    connection.isInitiator = false;
+    console.log("my new connection:",connection);
+
     //For disconnecting the user from room
     connection.getAllParticipants().forEach((p) =>{
+      console.log("p");
+      
       connection.disconnectWith(p); // optional but suggested
     });
     //Stop the streaming of video
@@ -235,11 +357,15 @@ export class RoomPage {
         stream.stop(); // optional
     });
     
+   
+    
     // connection.closeSocket(); // strongly recommended
     this.vc.getRoomname().then( roomname => {
      
          this.vc.leaveRoom(()=> {
           this.navCtrl.setRoot( LobbyPage );
+          console.log("i close session");
+          connection.closeEntireSession(); // strongly recommended
         });  
       });
   }
@@ -334,26 +460,7 @@ export class RoomPage {
          
     }
   }
-  listenEvents() {
-    this.events.subscribe( 'join-room', re => {
-      console.log("RoomPage::listenEvents() => someone joins the room: ", re );          
-      let message = { name: re[0].name, message: ' joins into ' + re[0].room };//Set Message
-      this.addMessage( message );    
-    });    
-    this.events.subscribe( 'chatMessage', re => {
-      console.log("RoomPage::listenEvents() => One user receive message: ", re ); 
-      let message = re[0];
-      this.addMessage( message );         
-    });
-    this.events.subscribe( 'whiteboard', re => {
-      let data = re[0];
-      if ( data.command == 'image' ) {
-          this.changeCanvasPhoto(data.image);
-      }
-     
-    });  
-    
-  }
+  
   addMessage( message ) {
     this.listMessage[0].messages.push( message )
     setTimeout(()=>{ this.events.publish( 'scroll-to-bottom' ); }, 100);
@@ -482,5 +589,39 @@ export class RoomPage {
       ]
     });
     actionSheet.present();
+  }
+  listenEvents() {
+    this.events.subscribe( 'join-room', re => {
+      console.log("RoomPage::listenEvents() => someone joins the room: ", re );          
+      let message = { name: re[0].name, message: ' joins into ' + re[0].room };//Set Message
+      this.addMessage( message );    
+    });    
+    this.events.subscribe( 'chatMessage', re => {
+      console.log("RoomPage::listenEvents() => One user receive message: ", re ); 
+      let message = re[0];
+      this.addMessage( message );         
+    });
+    this.events.subscribe( 'whiteboard', re => {
+      let data = re[0];
+      if ( data.command == 'image' ) {
+          this.changeCanvasPhoto(data.image);
+      }
+    });
+    this.events.subscribe( 'you-are-new-owner', re => {
+      let data = re[0];
+      console.log("RoomPage::listenEvents() => you-are-new-owner: ", data );
+
+      this.newOwner( data );          
+    });   
+    this.events.subscribe( 'room-cast', re => {
+      let data = re[0];
+      if ( data.command == 'reconnect' ) {
+          this.reConnect(data);
+      }
+      else if ( data.command == 'io' ) {
+          this.socketio(data);
+      }
+    });  
+    
   }
 }
