@@ -645,7 +645,7 @@ export class RoomPage {
 
   unListenEvents() {
     console.log("unListenEvents()");
-    this.events.unsubscribe('you-are-new-owner', () => this.eventYouAreNewOwner );
+    this.events.unsubscribe('you-are-new-owner', null );
   }
   listenEvents() {
     this.events.subscribe( 'join-room', re => {
