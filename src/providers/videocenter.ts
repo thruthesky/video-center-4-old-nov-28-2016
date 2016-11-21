@@ -126,6 +126,7 @@ connection.iceServers.push({
       this.events.publish( 'room-cast', re );
     });
     socket.on('you-are-new-owner', re => {
+      console.log("videocenter::socket.on('you-are-new-owner') ... ");
       this.events.publish( 'you-are-new-owner', re );
     });
     socket.on('chatMessage', re => {

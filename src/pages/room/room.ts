@@ -171,6 +171,9 @@ export class RoomPage {
       console.log("TESTING");
       setTimeout(()=>{ this.showSettings()},1000);
   }
+  ionViewDidLeave() {
+    this.unListenEvents();
+  }
   //Testing
   socketio( data ) {
     console.log( data );
@@ -626,6 +629,24 @@ export class RoomPage {
     });
     actionSheet.present();
   }
+  eventYouAreNewOwner( re ) {
+    console.log("eventYouAreNewOwner()");
+    if ( re ) {
+      let data = re[0];
+      console.log("RoomPage::listenEvents() => you-are-new-owner: ", data );
+      setTimeout(()=>{
+        this.newOwner( data );       
+      },50);
+    }
+    else {
+      console.error('No event data: re');
+    }
+  }
+
+  unListenEvents() {
+    console.log("unListenEvents()");
+    this.events.unsubscribe('you-are-new-owner', () => this.eventYouAreNewOwner );
+  }
   listenEvents() {
     this.events.subscribe( 'join-room', re => {
       console.log("RoomPage::listenEvents() => someone joins the room: ", re );          
@@ -643,15 +664,7 @@ export class RoomPage {
           this.changeCanvasPhoto(data.image);
       }
     });
-    this.events.subscribe( 'you-are-new-owner', re => {
-      let data = re[0];
-      console.log("RoomPage::listenEvents() => you-are-new-owner: ", data );
-      
-      setTimeout(()=>{
-        this.newOwner( data );       
-      },500);
-         
-    });   
+    this.events.subscribe( 'you-are-new-owner', re => this.eventYouAreNewOwner(re));   
     this.events.subscribe( 'room-cast', re => {
       let data = re[0];
       if ( data.command == 'reconnect' ) {
