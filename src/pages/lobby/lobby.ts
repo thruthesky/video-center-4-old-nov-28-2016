@@ -389,10 +389,16 @@ export class LobbyPage {
     setTimeout(()=>{ this.events.publish( 'scroll-to-bottom' ); }, 100); 
   }
   joinRoom( roomname ) {  
-    this.vc.joinRoom( roomname, re => {
-      console.log( 'joinRoom(): ', re);
-      this.navCtrl.setRoot( RoomPage );   
-    } );
+    // this.vc.joinRoom( roomname, re => {
+    //   console.log( 'joinRoom(): ', re);
+    //   this.navCtrl.setRoot( RoomPage );   
+    // } );
+    this.vc.setConfig('roomname', roomname);
+    console.log( 'joinRoom(): ', roomname);
+    setTimeout(()=>{
+      this.navCtrl.setRoot( RoomPage );  
+    },300);
+    
   }
 
   createRoom( roomname ) {

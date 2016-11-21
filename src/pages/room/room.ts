@@ -61,6 +61,7 @@ export class RoomPage {
   userId:string = '';
   firstChangeVideo:boolean = false;
   firstChangeAudio:boolean = false;
+  isInitiator:boolean = false;
   constructor(
     public navCtrl: NavController, 
     private vc: x.Videocenter,
@@ -86,24 +87,55 @@ export class RoomPage {
         this.listMessage[0] = { messages: [] };
       }
       vc.getRoomname().then( roomname => {
-        this.title = roomname;
-        let data :any = { room_name : roomname };
-        data.command = "history";
-        this.vc.whiteboard( data,() => { console.log("get whiteboard history")} );
-     
-        connection.checkPresence(roomname, (isRoomEists, roomid) => {
-          console.log("I WILL JOIN:",roomid);
-            if(isRoomEists) {
-                console.log("I Join a room");
-                connection.join(roomid);
-            }
-            else {
-              console.log("I Open a room");
-                connection.open(roomid);
-            }
+        console.log("vc.getRoomname()",roomname);
+        this.vc.joinRoom( roomname, (re)=> {
+          console.log("I will join or create room:",re);
+          this.title = re.room;
+          if(re.type == x.user_initiator_type) {
+            this.isInitiator = true;
+          }
+          else {
+            this.isInitiator = false;
+          }
+          console.log("I am ",this.isInitiator);
+          let data :any = { room_name : re.room };
+          data.command = "history";
+          this.vc.whiteboard( data,() => { console.log("get whiteboard history")} );
+          
+          connection.checkPresence(re.room, (isRoomEists, roomid) => {
+            console.log("I WILL JOIN:",roomid);
+              if(isRoomEists) {
+                  console.log("I Join a room");
+                  connection.join(roomid);
+              }
+              else {
+                console.log("I Open a room");
+                  connection.open(roomid);
+              }
+          });
+      
+          console.log("Connection:",connection);
         });
-    
-        console.log("Connection:",connection);
+          // 
+          // this.title = roomname;
+          // let data :any = { room_name : roomname };
+          // data.command = "history";
+          // this.vc.whiteboard( data,() => { console.log("get whiteboard history")} );
+          
+          // connection.checkPresence(roomname, (isRoomEists, roomid) => {
+          //   console.log("I WILL JOIN:",roomid);
+          //     if(isRoomEists) {
+          //         console.log("I Join a room");
+          //         connection.join(roomid);
+          //     }
+          //     else {
+          //       console.log("I Open a room");
+          //         connection.open(roomid);
+          //     }
+          // });
+      
+          // console.log("Connection:",connection);
+          // 
       });
    
       this.listenEvents();
@@ -162,35 +194,36 @@ export class RoomPage {
     },1000);
   }
   newOwner( userdata ) {
-    let connection = x.Videocenter.connection;
-    // most importantly
-    connection.isInitiator = true;
-    
-    //Remove old Stream
-    connection.getAllParticipants().forEach((p) =>{
-      connection.disconnectWith(p); // optional but suggested
-    });
-    //Stop the streaming of video
-    connection.attachStreams.forEach((stream) =>{
-        stream.stop(); // optional
-    });
-    //open new room
-    setTimeout(()=>{
-      console.log("I will join:",userdata.room);
-      connection.open(userdata.room);
-      // connection.renegotiate();
-      console.log("I become the new Owner");
-      //testing only
+    //check if he is already an initiator
+    alert("I will check if i am initiator alread?");
+    if(this.isInitiator) return;
+      this.isInitiator = true;
+      let connection = x.Videocenter.connection;
+      // most importantly
+      connection.isInitiator = true;
       
+      //Remove old Stream
+      connection.getAllParticipants().forEach((p) =>{
+        connection.disconnectWith(p); // optional but suggested
+      });
+      //Stop the streaming of video
+      connection.attachStreams.forEach((stream) =>{
+          stream.stop(); // optional
+      });
+      //open new room
       setTimeout(()=>{
-        let data = { command: "reconnect", roomname : userdata.room};
-        this.vc.roomCast( data );
-        alert("I become the new Owner");
-      },1000);
-    },2000);
- 
-    
-    
+        console.log("I will join:",userdata.room);
+        connection.open(userdata.room);
+        // connection.renegotiate();
+        //testing only
+        alert("You are the new owner");
+        setTimeout(()=>{
+          
+          let data = { command: "reconnect", roomname : userdata.room};
+          this.vc.roomCast( data );
+          // alert("I become the new Owner");
+        },500);
+      },500);
 
   //Muaz Khan code 
   // var sessions = {};
@@ -351,6 +384,7 @@ export class RoomPage {
       console.log("p");
       
       connection.disconnectWith(p); // optional but suggested
+     
     });
     //Stop the streaming of video
     connection.attachStreams.forEach((stream) =>{
@@ -366,6 +400,8 @@ export class RoomPage {
           this.navCtrl.setRoot( LobbyPage );
           console.log("i close session");
           connection.closeEntireSession(); // strongly recommended
+          // connection.closeSocket();
+     
         });  
       });
   }
@@ -610,8 +646,11 @@ export class RoomPage {
     this.events.subscribe( 'you-are-new-owner', re => {
       let data = re[0];
       console.log("RoomPage::listenEvents() => you-are-new-owner: ", data );
-
-      this.newOwner( data );          
+      
+      setTimeout(()=>{
+        this.newOwner( data );       
+      },500);
+         
     });   
     this.events.subscribe( 'room-cast', re => {
       let data = re[0];

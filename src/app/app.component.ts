@@ -14,15 +14,17 @@ export class MyApp {
   rootPage;
 
   constructor(platform: Platform, private vc: x.Videocenter ) {
-    vc.connnect();
+    vc.connect();
     vc.config('username', username => {
       if ( username ) {
         this.vc.updateUsername( username, re => {
           vc.config('roomname', roomname => {
+            console.log("App component my room:",roomname);
             if( roomname && roomname != x.LobbyRoomName ){
-              this.vc.joinRoom( roomname, re => {               
+              // this.vc.joinRoom( roomname, re => {               
+              //   this.rootPage =  RoomPage;   
+              // } );
                 this.rootPage =  RoomPage;   
-              } );
             }
             else {             
                 this.rootPage = LobbyPage;              

@@ -5,6 +5,8 @@ import { Md5 } from 'ts-md5/dist/md5';
 import { Events } from 'ionic-angular';
 
 export const LobbyRoomName: string = 'Lobby';
+export const user_participant_type:string = 'UserParticipant';
+export const user_initiator_type:string = 'UserInitiator';
 export interface USER {
     name: string;
     room: string;
@@ -48,7 +50,7 @@ export class Videocenter {
   /**
    * Connects to the server.
    */
-  connnect() {
+  connect() {
       console.log("Videocenter::connect()");
     Videocenter.connection = new RTCMultiConnection();
     Videocenter.connection.socketURL = this.socketUrl;
@@ -56,21 +58,21 @@ export class Videocenter {
     let connection: any = <any> Videocenter.connection;
 
 
-connection.enableFileSharing = false;
-connection.session = {
-    audio: true,
-    video: true,
-    data : false
-};
-connection.sdpConstraints.mandatory = {
-    OfferToReceiveAudio: true,
-    OfferToReceiveVideo: true
-};
-connection.getExternalIceServers = false;
-connection.iceServers = [];
-connection.iceServers.push({
-    url: 'stun:videocenter.co.kr:3478'
-});
+    connection.enableFileSharing = false;
+    connection.session = {
+        audio: true,
+        video: true,
+        data : false
+    };
+    connection.sdpConstraints.mandatory = {
+        OfferToReceiveAudio: true,
+        OfferToReceiveVideo: true
+    };
+    connection.getExternalIceServers = false;
+    connection.iceServers = [];
+    connection.iceServers.push({
+        url: 'stun:videocenter.co.kr:3478'
+    });
 
 
 
@@ -124,7 +126,6 @@ connection.iceServers.push({
       this.events.publish( 'room-cast', re );
     });
     socket.on('you-are-new-owner', re => {
-      console.log("socket.on('you-are-new-owner') : ", re);
       this.events.publish( 'you-are-new-owner', re );
     });
     socket.on('chatMessage', re => {
