@@ -2,20 +2,9 @@
   <ion-navbar>
     <ion-title>
       Room {{ title }}
-      
-     
     <button ion-button color="dark" (click)=" showMiscellaneous() " >
       <ion-icon name="settings" ></ion-icon>
     </button> 
-    <!--<button ion-button color="dark" (click)=" newOwner() " >
-      <ion-icon name="logo-android" ></ion-icon>
-    </button>-->
-    <!--<button ion-button color="dark" (click)=" reConnect() " >
-      <ion-icon name="md-contacts" ></ion-icon>
-    </button>-->
-    <!--<button ion-button color="dark" (click)=" settings = ! settings " >
-      <ion-icon name="settings" ></ion-icon>
-    </button>       -->
     <button ion-button color="dark" (click)="onClickLobby()" >
       <ion-icon name="md-log-out"></ion-icon>
     </button>  
@@ -65,13 +54,6 @@
     <div *ngIf="loader">{{connectingToServer}}</div>
     <!--Load post-->
     <ion-list class="documentList">
-      <!--<ion-card   *ngFor=" let post of posts; let i = index; " >
-        <div class="avatar">
-            <img src="{{ post.value.urlPhoto }}"/>
-        </div>
-        {{ post.value.namePhoto }}
-      </ion-card>-->
-
       <ion-item  *ngFor=" let post of posts; " >
         <div (click)="onChangePhotoDisplay(post.value.urlPhoto)">{{ post.value.namePhoto }} </div>
       </ion-item>
@@ -89,8 +71,6 @@
       <img [src]="canvasPhoto">
     </div>
     <canvas mycanvas id="mycanvas" [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
-  <!--<canvas  width="{{ canvaswidth }}" height="{{ canvasheight }}"  mycanvas [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>-->
-    
     <i>
     
     <button ion-button color="dark" (click)="drawMode()" id="ion-draw">
@@ -117,9 +97,6 @@
         <ion-option value="#2094D7">Blue</ion-option>             
       </ion-select>
     </button>
-    
-        
-        
 
     <button ion-button color="dark" class="size">
       <ion-icon name="md-options"></ion-icon>
@@ -130,13 +107,7 @@
       </ion-select>
     </button>
 
-    </i><!--/-->
-
-
-
+    </i>
   </div><!--/whiteboard-container-->
-
-
-  
 
 </ion-content>
