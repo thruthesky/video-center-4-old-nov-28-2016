@@ -16,14 +16,17 @@ export class MyApp {
   constructor(platform: Platform, private vc: x.Videocenter ) {
     vc.connect();
     vc.config('username', username => {
+      /**
+       * 
+       * Check if there's a username
+       * and check if there is also a roomname
+       * 
+       */
       if ( username ) {
         this.vc.updateUsername( username, re => {
           vc.config('roomname', roomname => {
             console.log("App component my room:",roomname);
             if( roomname && roomname != x.LobbyRoomName ){
-              // this.vc.joinRoom( roomname, re => {               
-              //   this.rootPage =  RoomPage;   
-              // } );
                 this.rootPage =  RoomPage;   
             }
             else {             

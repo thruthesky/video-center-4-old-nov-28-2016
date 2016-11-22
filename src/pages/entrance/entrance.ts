@@ -10,21 +10,14 @@ import * as x from '../../providers/videocenter';
 export class EntrancePage {
   username: string;
   error: string;
-  settings:boolean;
-  oldvideo:any;
-  selectedAudio:string;
-  defaultAudio:boolean;
-  selectedVideo:string;
-  defaultVideo:boolean;
-  audios = [];
-  videos = [];
+
   constructor(
     public navCtrl: NavController,
     public alertCtrl: AlertController,
     private vc: x.Videocenter ) {
-      this.settings = true;
-  }
   
+  }
+  //On click sign in go to lobby page
   onClickSignin() {
     if ( this.username ) {
       this.vc.updateUsername( this.username, re => {
@@ -32,7 +25,6 @@ export class EntrancePage {
       } );
     }
     else {
-      // this.showErrorInputUsername();
       let alert = this.alertCtrl.create({
       title: 'Form Error!',
         subTitle: 'Your username input is empty!',

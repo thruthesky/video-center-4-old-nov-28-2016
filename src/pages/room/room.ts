@@ -116,7 +116,6 @@ export class RoomPage {
                   connection.open(roomid);
               }
           });
-      
           console.log("Connection:",connection);
         });
       });
@@ -125,7 +124,6 @@ export class RoomPage {
      
       // load the files
       this.loadPosts();
-      
   
       // File Upload
       if ( this.postKey ) {
@@ -148,85 +146,16 @@ export class RoomPage {
               console.info('Post get() fail on key:' + this.postKey + ', Error:' + e);
             });
         }
-
       // A new user's video stream arrives
       connection.onstream = (event) => this.addUserVideo( event );
       setTimeout(()=>{ this.showSettings()},1000);
   }
-  
- 
-  reConnect( data ) {
-    let connection = x.Videocenter.connection;
-    
-    //Remove old Stream
-    connection.getAllParticipants().forEach((p) =>{
-      connection.disconnectWith(p); // optional but suggested
-    });
-    //Stop the streaming of video
-    connection.attachStreams.forEach((stream) =>{
-        stream.stop(); // optional
-    });
-    //open new room
-    setTimeout(()=>{
-      connection.connect(data.roomname);
-    },1000);
-  }
-  newOwner( userdata ) {
-    //check if he is already an initiator
-    alert("I will check if i am initiator alread?");
-    if(this.isInitiator) return;
-      this.isInitiator = true;
-      let connection = x.Videocenter.connection;
-      // most importantly
-      connection.isInitiator = true;
-      
-      //Remove old Stream
-      connection.getAllParticipants().forEach((p) =>{
-        connection.disconnectWith(p); // optional but suggested
-      });
-      //Stop the streaming of video
-      connection.attachStreams.forEach((stream) =>{
-          stream.stop(); // optional
-      });
-      // open new room
-      // i put set timeout so that it is not asynch
-      setTimeout(()=>{
-        connection.open(userdata.room);
-        setTimeout(()=>{
-          let data = { command: "reconnect", roomname : userdata.room};
-          this.vc.roomCast( data );
-        },500);
-      },500);
-
-  }
-  addUserVideo( event ) {
-    let connection = x.Videocenter.connection;
-    let me: string = 'you';
-    if ( connection.userid == event.userid ) me = 'me';
-    let video = event.mediaElement;
-    video.setAttribute('class', me);
-    let videos= document.getElementById('video-container');
-    if ( me == 'me' ) {
-      videos.insertBefore(video, videos.firstChild);
-      this.streamId = event.streamid;
-      this.userId = event.userId;
-    }
-    else {
-      videos.appendChild( video );
-    }
-
-  }
-  
-  ngOnInit() {
-    this.setCanvasSize(this.defaultCanvasSize,this.defaultCanvasSize);
-  }
-  setCanvasSize(h, w) {
-     let mycanvas= document.getElementById('mycanvas');
-     mycanvas.setAttribute('height', h);
-     mycanvas.setAttribute('width', w);
-  }
+  /**
+   * 
+   * For Video and Audio function
+   */
+  // Adding video & audio settings
   showSettings() {
-    //////
     let connection = x.Videocenter.connection;
  
     /**
@@ -264,22 +193,24 @@ export class RoomPage {
                 }
             }
         });
-        
         this.getDefaultAudio();
         this.getDefaultVideo();
     });
   }
+  //Get default audio from storage
   getDefaultAudio(){
     this.vc.config('default-audio',(value)=>{
       this.selectedAudio = value;
     });
   }
+  //Get default video from storage
   getDefaultVideo(){
     this.vc.config('default-video',(value)=>{
       this.selectedVideo = value;
     });
   }
   
+  //Remove video stream
   removeVideoStream( data ) {
     let video = document.getElementById(data.streamId);
     console.log("remover video",video);
@@ -287,53 +218,34 @@ export class RoomPage {
     video.parentNode.removeChild(video);
   }
   
-  
-  
-  addMessage( message ) {
-    this.listMessage[0].messages.push( message )
-    setTimeout(()=>{ this.events.publish( 'scroll-to-bottom' ); }, 100);
-  }
-
+  /**
+   * 
+   * For Whiteboard Functionality
+   */
+  //clear canvas
   onClickClear() {
     this.events.publish( 'click-clear-canvas' );
   } 
+  //For draw mode whiteboard
   drawMode() {
     this.dmode = "l";
   } 
+  //For erase mode whiteboard
   eraseMode() {
     this.dmode = "e";
   }
-
-  
-  
-  changeCanvasPhoto(image) {
-    this.canvasPhoto = image;
+  //Set Canvas Size
+  setCanvasSize(h, w) {
+     let mycanvas= document.getElementById('mycanvas');
+     mycanvas.setAttribute('height', h);
+     mycanvas.setAttribute('width', w);
   }
 
-  loadPosts( infinite? ) {
-    this.post
-      .gets( data => {
-        if ( ! _.isEmpty(data) ) this.displayPosts( data );
-      },
-      e => {
-        console.log("fetch failed: ", e);
-      });
-  }
-  displayPosts( data ) {
-      for( let key of Object.keys(data).reverse() ) {
-        this.posts.push ( {key: key, value: data[key]} );
-      }
-  }
- 
-  
-  onChangePhotoDisplay(url){
-    this.urlPhoto = url;
-  }
   /**
    * 
    * Ionic Function
    */
-
+  
   //To show settings with action sheet
   showMiscellaneous() {
     let actionSheet = this.actionSheetCtrl.create({
@@ -390,8 +302,6 @@ export class RoomPage {
         stream.stop(); // optional
     });
     
-   
-    
     // connection.closeSocket(); // strongly recommended
     this.vc.getRoomname().then( roomname => {
      
@@ -404,11 +314,29 @@ export class RoomPage {
         });  
       });
   }
+  //Add video when there's a new stream
+  addUserVideo( event ) {
+    let connection = x.Videocenter.connection;
+    let me: string = 'you';
+    if ( connection.userid == event.userid ) me = 'me';
+    let video = event.mediaElement;
+    video.setAttribute('class', me);
+    let videos= document.getElementById('video-container');
+    if ( me == 'me' ) {
+      videos.insertBefore(video, videos.firstChild);
+      this.streamId = event.streamid;
+      this.userId = event.userId;
+    }
+    else {
+      videos.appendChild( video );
+    }
+  }
 
+  //Change video device
   changeVideo( videoSourceId ) {
     let connection = x.Videocenter.connection;
     this.vc.setConfig('default-video',videoSourceId);
-    
+    //Check if device is already selected
     if(connection.mediaConstraints.video.optional.length && connection.attachStreams.length) {
         if(connection.mediaConstraints.video.optional[0].sourceId === videoSourceId) {
             alert('Selected video device is already selected.');
@@ -440,10 +368,11 @@ export class RoomPage {
       connection.captureUserMedia();
     }
   }
-  
+  //Change audio device
   changeAudio( audioSourceId ) {
     let connection = x.Videocenter.connection;
     this.vc.setConfig('default-audio',audioSourceId);
+     //Check if device is already selected
     if(connection.mediaConstraints.audio.optional.length && connection.attachStreams.length) {
         if(connection.mediaConstraints.audio.optional[0].sourceId === audioSourceId) {
             alert('Selected audio device is already selected.');
@@ -516,6 +445,11 @@ export class RoomPage {
           this.position = percent;
       } );
   }
+  
+  //Change document preview image
+  onChangePhotoDisplay(url){
+    this.urlPhoto = url;
+  }
   //after file upload get the data to be posted
   onFileUploaded( url, ref ) {
       this.file_progress = false;
@@ -543,12 +477,32 @@ export class RoomPage {
         console.log( 'onclickPost::Failed' + e );
     });
   }
+  //get list of uploaded files in firebase
+  loadPosts( infinite? ) {
+    this.post
+      .gets( data => {
+        if ( ! _.isEmpty(data) ) this.displayPosts( data );
+      },
+      e => {
+        console.log("fetch failed: ", e);
+      });
+  }
+  //Put it inside posts to use in view
+  displayPosts( data ) {
+      for( let key of Object.keys(data).reverse() ) {
+        this.posts.push ( {key: key, value: data[key]} );
+      }
+  }
   /**
    * 
    * Ionic Life Cycle
    * 
    */
-  //if the page is no more display run this
+  //Called after first Ngonchanges
+  ngOnInit() {
+    this.setCanvasSize(this.defaultCanvasSize,this.defaultCanvasSize);
+  }
+  //Run if the page is no more display
   ionViewDidLeave() {
     //unsubscribe
     this.unListenEvents();
@@ -594,10 +548,17 @@ export class RoomPage {
    * Event Functionality
    * 
    */
-
+  //Add to listMessage to be displayed in the view  
+  addMessage( message ) {
+    this.listMessage[0].messages.push( message )
+    setTimeout(()=>{ this.events.publish( 'scroll-to-bottom' ); }, 100);
+  }
+  //Change canvas image
+  changeCanvasPhoto(image) {
+    this.canvasPhoto = image;
+  }
   //To change initiator or owner of the room
    eventYouAreNewOwner( re ) {
-    console.log("eventYouAreNewOwner()");
     if ( re ) {
       let data = re[0];
       console.log("RoomPage::listenEvents() => you-are-new-owner: ", data );
@@ -608,5 +569,49 @@ export class RoomPage {
     else {
       console.error('No event data: re');
     }
+  }
+  //Become the new owener because the initiator leaves the room
+  newOwner( userdata ) {
+    //check if he is already an initiator
+    alert("I will check if i am initiator alread?");
+    if(this.isInitiator) return;
+      this.isInitiator = true;
+      let connection = x.Videocenter.connection;
+      // most importantly
+      connection.isInitiator = true;
+      
+      //Remove old Stream
+      connection.getAllParticipants().forEach((p) =>{
+        connection.disconnectWith(p); // optional but suggested
+      });
+      //Stop the streaming of video
+      connection.attachStreams.forEach((stream) =>{
+          stream.stop(); // optional
+      });
+      // open new room and I put set timeout so that it is not asynch
+      setTimeout(()=>{
+        connection.open(userdata.room);
+        setTimeout(()=>{
+          let data = { command: "reconnect", roomname : userdata.room};
+          this.vc.roomCast( data );
+        },500);
+      },500);
+  }
+  // To reconnect after the initiator change
+  reConnect( data ) {
+    let connection = x.Videocenter.connection;
+    
+    //Remove old Stream
+    connection.getAllParticipants().forEach((p) =>{
+      connection.disconnectWith(p); // optional but suggested
+    });
+    //Stop the streaming of video
+    connection.attachStreams.forEach((stream) =>{
+        stream.stop(); // optional
+    });
+    //open new room
+    setTimeout(()=>{
+      connection.connect(data.roomname);
+    },1000);
   }
 }

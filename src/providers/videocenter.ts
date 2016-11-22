@@ -25,19 +25,19 @@ export interface Mouse {
     pos_prev: { x: number | string, y: number | string };
 }
 export let mouse: Mouse = {
-        click: false,
-        move: false,
-        pos: { x:0, y: 0},
-        pos_prev: { x: 0, y: 0 }
+    click: false,
+    move: false,
+    pos: { x:0, y: 0},
+    pos_prev: { x: 0, y: 0 }
 }
 
 import { Storage } from '@ionic/storage';
 @Injectable()
 export class Videocenter {
-    // socketUrl: string = "http://localhost:9001/";
-    socketUrl: string = "https://videocenter.co.kr:9001/";
-    static socket:any = false;
-    static connection;
+  // socketUrl: string = "http://localhost:9001/";
+  socketUrl: string = "https://videocenter.co.kr:9001/";
+  static socket:any = false;
+  static connection;
   constructor(
     private storage: Storage,
     private events: Events
@@ -74,28 +74,14 @@ export class Videocenter {
         url: 'stun:videocenter.co.kr:3478'
     });
 
-
-
-
-
-/**
- * @todo username 과 credential 이 틀려도 접속이 된다. 확인을 해 볼 것.
- */
-connection.iceServers.push({
-    urls: 'turn:videocenter.co.kr:3478',
-    username: 'test_username1',
-    credential: 'test_password1'
-});
-
-
-
-  // change user id as socket id
-  /*
-    this.emit( 'changed-uuid', this.getSocket().id, () => {
-      console.log("changed-uuid: ", this.getSocket().id);
-    });
-    */
-
+  /**
+   * @todo username 과 credential 이 틀려도 접속이 된다. 확인을 해 볼 것.
+   */
+  connection.iceServers.push({
+      urls: 'turn:videocenter.co.kr:3478',
+      username: 'test_username1',
+      credential: 'test_password1'
+  });
 
   }
   /**
@@ -107,9 +93,12 @@ connection.iceServers.push({
         }
         return Videocenter.socket;
   }
+  emit( protocol: string, data?: any, callback?: boolean | any ) {
+    if ( callback ) this.socket.emit( protocol, data, callback );
+    else this.socket.emit( protocol, data );
+  }
   listen() {
     let socket = this.socket;
-    //console.log("Videocenter::listen()", socket);
     socket.on('update-username', re => {
       this.events.publish( 'update-username', re );
     });
@@ -162,17 +151,6 @@ connection.iceServers.push({
   }
   getRoomname() {
     return this.roomname;
-  }
-  /**
-   * 
-   * 
-   */
-  emit( protocol: string, data?: any, callback?: boolean | any ) {
-    
-    
-    // @todo clearify why we need if....
-    if ( callback ) this.socket.emit( protocol, data, callback );
-    else this.socket.emit( protocol, data );
   }
   
   
@@ -243,16 +221,7 @@ connection.iceServers.push({
   whiteboard( data, callback : any ) : void {
     this.emit('whiteboard', data, callback);
   }
-    /**
-     * @edited give proper signature. 2016-09-02 JaeHo Song.
-     */
-    /*
-    updateUsername( username: string, callback: (user:de.User) => void ) {
-        Server.emit( 'update-username', username, (user: de.User) => {
-            callback( user );
-        } );
-    }
-    */
+
     
     
     md5( str: string ) : string {

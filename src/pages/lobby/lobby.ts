@@ -25,25 +25,18 @@ export class LobbyPage {
   title: string;
   inputMessage: string;
   listMessage: MESSAGELIST = <MESSAGELIST> {};
-  settings:boolean;
-  oldvideo:any;
-  selectedAudio:string;
-  defaultAudio:boolean;
-  selectedVideo:string;
-  defaultVideo:boolean;
-  audios = [];
-  videos = [];
   constructor(
     public navCtrl: NavController,
     private vc: x.Videocenter,
     public alertCtrl: AlertController,
     private events: Events ) {
-    this.settings = true;  
     this.inputMessage = '';
     if ( this.listMessage[0] === void 0 ) {
       this.listMessage[0] = { messages: [] };
     }
+    //Join the Lobby room
     vc.joinRoom( x.LobbyRoomName, re => { 
+      //Get username 
       vc.getUsername().then( username => this.title = username );
       console.log('LobbyPage::constructor() joinRoom callback:', re);
       
@@ -51,25 +44,30 @@ export class LobbyPage {
         console.log('LobbyPage::constructor() vc.userList callback(): ', re);
         this.showRoomList( re );
       })
-    });    
+    });
+    //Subscribe to events    
     this.listenEvents();
 
   }
+  //Update  Username
   onClickUpdateUsername() {
     this.getUsername( username => this.updateUsername( username ) );
   }
+  //Update  Roomname
   onClickCreateRoom() {
     this.getRoomname( x => this.createRoom( x ) );
   }
+  //Join Room
   onClickJoinRoom( roomname ) {
     this.joinRoom( roomname );
   }
-
+  //For Logout
   onClickLogout() {
     this.vc.logout(()=> {
       this.navCtrl.setRoot( EntrancePage );
     });    
   }
+  
   updateUsername( username: string ) {
     console.log(username);
     if ( username ) {
@@ -99,17 +97,16 @@ export class LobbyPage {
       });
       alert.present();
     }
-    
-  }  
+  }
+  //Send Message  
   onSendMessage(message: string) {
     if(message != ""){
       this.vc.sendMessage(message, ()=> {
         this.inputMessage = '';             
       });
-         
     }
   }
-  
+  //Show Room List
   showRoomList( users: { (key: string) : Array<x.USER> } ) {
     console.log( 'LobbyPage::showRoomList() users: ', users );
     for ( let socket_id in users ) {
@@ -126,12 +123,14 @@ export class LobbyPage {
       this.rooms[ room_id ].users.push( user );    
     }
   }
+  //Add userlist inside roomlist
   addUserList( re ) {  
     let user: x.USER = re[0];       
     let room_id = this.vc.md5( user.room );
     if ( this.rooms[ room_id ] === void 0 ) this.rooms[ room_id ] = { name: user.room, users: [] };      
     this.rooms[ room_id ].users.push( user );
   }
+  //update user on userlist
   updateUserOnUserList( re ) {  
     let user: x.USER = re[0];   
     let room_id = this.vc.md5( user.room );   
@@ -144,7 +143,7 @@ export class LobbyPage {
       }          
     }    
   }
-  
+  //Remove userlist
   removeUserList( re ) {  
     let user: x.USER = re[0];
     for ( let room_id in this.rooms ) {
@@ -226,21 +225,24 @@ export class LobbyPage {
     });
     prompt.present();
   }
+  //For join message
   joinMessage( re ){
     let message = { name: re[0].name, message: ' joins into ' + re[0].room };
     this.addMessage( message ); 
   }
+  //For disconnect message
   disconnectMessage( re ){
     if( re[0].room ){
       let message = { name: re[0].name, message: ' disconnect into ' + re[0].room };
       this.addMessage( message );
     } 
   }
-   
+  //Add to listMessage to be displayed in the view   
   addMessage( message ) {     
     this.listMessage[0].messages.push( message );
     setTimeout(()=>{ this.events.publish( 'scroll-to-bottom' ); }, 100); 
   }
+  //Set roomname in storage then go to roompage
   joinRoom( roomname ) {  
     this.vc.setConfig('roomname', roomname);
     console.log( 'joinRoom(): ', roomname);
@@ -249,12 +251,19 @@ export class LobbyPage {
     },300);
     
   }
-
+  //Create Room
   createRoom( roomname ) {
     this.vc.createRoom( roomname, (re) => {
       this.joinRoom( roomname );
     });
   }
+   /**
+   * 
+   * Ionic Subscribe and Unsubscribe
+   * 
+   */
+  
+  //subscribe events
   listenEvents() {
     this.events.subscribe( 'update-username', re => {
       console.log("LobbyPage::listenEvents() => One user updated his name: ", re );   
