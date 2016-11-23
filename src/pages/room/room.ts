@@ -513,7 +513,7 @@ export class RoomPage {
    * 
    */
   
-  //subscribe events
+  //Subscribe events
   listenEvents() {
     this.events.subscribe( 'join-room', re => {
       console.log("RoomPage::listenEvents() => someone joins the room: ", re );          
@@ -539,10 +539,14 @@ export class RoomPage {
       }
     });  
   }
-  //unsubscribe events
+  //Unsubscribe events
   unListenEvents() {
     console.log("unListenEvents()");
+    this.events.unsubscribe('join-room', null );
+    this.events.unsubscribe('chatMessage', null );
+    this.events.unsubscribe('whiteboard', null );
     this.events.unsubscribe('you-are-new-owner', null );
+    this.events.unsubscribe('room-cast', null );
   }
   /**
    * Event Functionality

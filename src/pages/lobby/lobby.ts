@@ -259,11 +259,23 @@ export class LobbyPage {
   }
    /**
    * 
+   * Ionic Life Cycle
+   * 
+   */
+   //Called after first Ngonchanges
+ 
+   //Run if the page is no more display
+   ionViewDidLeave() {
+     //unsubscribe
+     this.unListenEvents();
+   }
+   /**
+   * 
    * Ionic Subscribe and Unsubscribe
    * 
    */
   
-  //subscribe events
+  //Subscribe events
   listenEvents() {
     this.events.subscribe( 'update-username', re => {
       console.log("LobbyPage::listenEvents() => One user updated his name: ", re );   
@@ -296,5 +308,15 @@ export class LobbyPage {
       let message = re[0];
       this.addMessage( message );             
     });
+  }
+  //Unsubscribe events
+  unListenEvents() {
+    console.log("unListenEvents()");
+    this.events.unsubscribe('update-username', null );
+    this.events.unsubscribe('join-room', null );
+    this.events.unsubscribe('leave-room', null );
+    this.events.unsubscribe('log-out', null );
+    this.events.unsubscribe('disconnect', null );
+    this.events.unsubscribe('chatMessage', null );
   }
 }
