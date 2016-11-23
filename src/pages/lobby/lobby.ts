@@ -43,7 +43,7 @@ export class LobbyPage {
       vc.userList( '', re => {
         console.log('LobbyPage::constructor() vc.userList callback(): ', re);
         this.showRoomList( re );
-      })
+      });
     });
     //Subscribe to events    
     this.listenEvents();
@@ -124,7 +124,8 @@ export class LobbyPage {
     }
   }
   //Add userlist inside roomlist
-  addUserList( re ) {  
+  addUserList( re ) {
+    console.log("Add user List");  
     let user: x.USER = re[0];       
     let room_id = this.vc.md5( user.room );
     if ( this.rooms[ room_id ] === void 0 ) this.rooms[ room_id ] = { name: user.room, users: [] };      
@@ -259,12 +260,25 @@ export class LobbyPage {
   }
    /**
    * 
+   * Ionic Life Cycle
+   * 
+   */
+   //Called after first Ngonchanges
+ 
+   //Run if the page is no more display
+   ionViewDidLeave() {
+     //unsubscribe
+     this.unListenEvents();
+   }
+   /**
+   * 
    * Ionic Subscribe and Unsubscribe
    * 
    */
   
-  //subscribe events
+  //Subscribe events
   listenEvents() {
+    console.log("Nakikinig ako");
     this.events.subscribe( 'update-username', re => {
       console.log("LobbyPage::listenEvents() => One user updated his name: ", re );   
       this.updateUserOnUserList(re);
@@ -296,5 +310,15 @@ export class LobbyPage {
       let message = re[0];
       this.addMessage( message );             
     });
+  }
+  //Unsubscribe events
+  unListenEvents() {
+    console.log("unListenEvents()");
+    this.events.unsubscribe('update-username', null );
+    this.events.unsubscribe('join-room', null );
+    this.events.unsubscribe('leave-room', null );
+    this.events.unsubscribe('log-out', null );
+    this.events.unsubscribe('disconnect', null );
+    this.events.unsubscribe('chatMessage', null );
   }
 }
