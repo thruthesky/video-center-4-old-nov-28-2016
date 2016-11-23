@@ -43,7 +43,7 @@ export class LobbyPage {
       vc.userList( '', re => {
         console.log('LobbyPage::constructor() vc.userList callback(): ', re);
         this.showRoomList( re );
-      })
+      });
     });
     //Subscribe to events    
     this.listenEvents();
@@ -124,7 +124,8 @@ export class LobbyPage {
     }
   }
   //Add userlist inside roomlist
-  addUserList( re ) {  
+  addUserList( re ) {
+    console.log("Add user List");  
     let user: x.USER = re[0];       
     let room_id = this.vc.md5( user.room );
     if ( this.rooms[ room_id ] === void 0 ) this.rooms[ room_id ] = { name: user.room, users: [] };      
@@ -277,6 +278,7 @@ export class LobbyPage {
   
   //Subscribe events
   listenEvents() {
+    console.log("Nakikinig ako");
     this.events.subscribe( 'update-username', re => {
       console.log("LobbyPage::listenEvents() => One user updated his name: ", re );   
       this.updateUserOnUserList(re);

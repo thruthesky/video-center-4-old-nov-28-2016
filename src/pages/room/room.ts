@@ -515,10 +515,17 @@ export class RoomPage {
   
   //Subscribe events
   listenEvents() {
+    // console.log("Nakikinig ako");
+    // let socket = this.vc.socket;
+    // socket.on('join-room', re => {
+    //   console.log("socket.onroom('join-room') : ", re);
+    //   this.checkRoom( re );
+    // });
     this.events.subscribe( 'join-room', re => {
       console.log("RoomPage::listenEvents() => someone joins the room: ", re );          
       let message = { name: re[0].name, message: ' joins into ' + re[0].room };
-      this.addMessage( message );    
+      this.addMessage( message );
+      this.checkRoom( re[0]);
     });    
     this.events.subscribe( 'chatMessage', re => {
       console.log("RoomPage::listenEvents() => One user receive message: ", re ); 
@@ -547,17 +554,24 @@ export class RoomPage {
     this.events.subscribe( 'disconnect', re => {
       console.log("RoomPage::listenEvents() => someone disconnect the room: ", re );
       let message = { name: re[0].name, message: ' disconnect into ' + re[0].room };
-      this.addMessage( message );     
+      this.addMessage( message );
+      // this.checkRoom( re[0]);     
     });  
   }
   //Unsubscribe events
   unListenEvents() {
+    let socket = this.vc.socket;
     console.log("unListenEvents()");
     this.events.unsubscribe('join-room', null );
     this.events.unsubscribe('chatMessage', null );
     this.events.unsubscribe('whiteboard', null );
     this.events.unsubscribe('you-are-new-owner', null );
     this.events.unsubscribe('room-cast', null );
+    this.events.unsubscribe('disconnect', null );
+    
+    // // testing
+    // socket.removeAllListeners("join-room");
+    // console.log("socket",socket);
   }
   /**
    * Event Functionality
@@ -567,6 +581,35 @@ export class RoomPage {
   addMessage( message ) {
     this.listMessage[0].messages.push( message )
     setTimeout(()=>{ this.events.publish( 'scroll-to-bottom' ); }, 100);
+  }
+  //Check if you are the only participant then request to become owner in the server
+  checkRoom( data ) {
+    this.vc.getMyInfo( myuser => {
+      console.log("What is my room?",myuser.room);
+      //if someone leaves or disconnect in the room
+      if(data.room == x.LobbyRoomName ){
+        let isOnlyParticipant:boolean = true;
+        this.vc.userList( "", re => {
+          console.log('RoomPage::constructor() vc.userList callback(): ', re);
+          // Check all user
+          for ( let socket_id in re ) {
+            let user = re[socket_id];
+            if( user.room == myuser.room && user.socket != myuser.socket ){
+              isOnlyParticipant = false;
+              continue;
+            }
+            console.log("The user:",user);
+          }
+          if(isOnlyParticipant && !this.isInitiator){
+            console.log("I know I'm the only one");
+          }else {
+            console.log("I know I'm not the only one");
+          }
+          
+        }); 
+      }
+    });
+ 
   }
   //Change canvas image
   changeCanvasPhoto(image) {
@@ -588,7 +631,6 @@ export class RoomPage {
   //Become the new owener because the initiator leaves the room
   newOwner( userdata ) {
     //check if he is already an initiator
-    alert("I will check if i am initiator alread?");
     if(this.isInitiator) return;
       this.isInitiator = true;
       let connection = x.Videocenter.connection;
