@@ -518,7 +518,7 @@ export class RoomPage {
     this.events.subscribe( 'join-room', re => {
       console.log("RoomPage::listenEvents() => someone joins the room: ", re );          
       let message = { name: re[0].name, message: ' joins into ' + re[0].room };//Set Message
-      this.addMessage( message );    
+      this.addMessage( message );
     });    
     this.events.subscribe( 'chatMessage', re => {
       console.log("RoomPage::listenEvents() => One user receive message: ", re ); 
@@ -601,13 +601,16 @@ export class RoomPage {
   reConnect( data ) {
     let connection = x.Videocenter.connection;
     
-    //Remove old Stream
+    // optional but suggested
+    // Remove old Stream
     connection.getAllParticipants().forEach((p) =>{
-      connection.disconnectWith(p); // optional but suggested
+      connection.disconnectWith(p);
     });
-    //Stop the streaming of video
+
+    // optional
+    // Stop the streaming of video
     connection.attachStreams.forEach((stream) =>{
-        stream.stop(); // optional
+        stream.stop();
     });
     //open new room
     setTimeout(()=>{
