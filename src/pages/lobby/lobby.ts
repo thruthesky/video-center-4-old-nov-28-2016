@@ -245,11 +245,12 @@ export class LobbyPage {
   }
   //Set roomname in storage then go to roompage
   joinRoom( roomname ) {  
-    this.vc.setConfig('roomname', roomname);
     console.log( 'joinRoom(): ', roomname);
-    setTimeout(()=>{
-      this.navCtrl.setRoot( RoomPage );  
-    },300);
+    this.vc.setConfig('roomname', roomname)
+      .then( () => {
+        this.unListenEvents(); // unsubscribe events before join the room.
+        this.navCtrl.setRoot( RoomPage );  
+      });
     
   }
   //Create Room
@@ -266,9 +267,8 @@ export class LobbyPage {
    //Called after first Ngonchanges
  
    //Run if the page is no more display
-   ionViewDidLeave() {
-     //unsubscribe
-     this.unListenEvents();
+   ionViewWillLeave() {
+     console.log('LobbyPage::ionViewWillLeave()');
    }
    /**
    * 

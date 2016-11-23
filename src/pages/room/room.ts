@@ -69,6 +69,9 @@ export class RoomPage {
     private actionSheetCtrl: ActionSheetController,
     private file: Data,
     private navParams: NavParams,) {
+
+
+
       let connection = x.Videocenter.connection;
       connection.sdpConstraints.mandatory = {
           OfferToReceiveAudio: true,
@@ -119,8 +122,6 @@ export class RoomPage {
           console.log("Connection:",connection);
         });
       });
-      //subscribe to events
-      this.listenEvents();
      
       // load the files
       this.loadPosts();
@@ -150,6 +151,8 @@ export class RoomPage {
       connection.onstream = (event) => this.addUserVideo( event );
       setTimeout(()=>{ this.showSettings()},1000);
   }
+
+
   /**
    * 
    * For Video and Audio function
@@ -302,17 +305,14 @@ export class RoomPage {
         stream.stop(); // optional
     });
     
-    // connection.closeSocket(); // strongly recommended
-    this.vc.getRoomname().then( roomname => {
      
          this.vc.leaveRoom(()=> {
+          this.unListenEvents(); // unsubscribe room events before joining to lobby
           this.navCtrl.setRoot( LobbyPage );
           console.log("i close session");
           connection.closeEntireSession(); // strongly recommended
           // connection.closeSocket();
-     
-        });  
-      });
+        });
   }
   //Add video when there's a new stream
   addUserVideo( event ) {
@@ -502,10 +502,15 @@ export class RoomPage {
   ngOnInit() {
     this.setCanvasSize(this.defaultCanvasSize,this.defaultCanvasSize);
   }
+
+  ionViewDidLoad() {
+    console.log("RoomPage::ionViewDidLoad()");
+      //subscribe to events
+      this.listenEvents();
+  }
+
   //Run if the page is no more display
   ionViewDidLeave() {
-    //unsubscribe
-    this.unListenEvents();
   }
   /**
    * 
@@ -515,6 +520,7 @@ export class RoomPage {
   
   //Subscribe events
   listenEvents() {
+    console.log('listenEvents()');
     // console.log("Nakikinig ako");
     // let socket = this.vc.socket;
     // socket.on('join-room', re => {
@@ -525,7 +531,6 @@ export class RoomPage {
       console.log("RoomPage::listenEvents() => someone joins the room: ", re );          
       let message = { name: re[0].name, message: ' joins into ' + re[0].room };
       this.addMessage( message );
-      this.checkRoom( re[0]);
     });    
     this.events.subscribe( 'chatMessage', re => {
       console.log("RoomPage::listenEvents() => One user receive message: ", re ); 
@@ -581,35 +586,6 @@ export class RoomPage {
   addMessage( message ) {
     this.listMessage[0].messages.push( message )
     setTimeout(()=>{ this.events.publish( 'scroll-to-bottom' ); }, 100);
-  }
-  //Check if you are the only participant then request to become owner in the server
-  checkRoom( data ) {
-    this.vc.getMyInfo( myuser => {
-      console.log("What is my room?",myuser.room);
-      //if someone leaves or disconnect in the room
-      if(data.room == x.LobbyRoomName ){
-        let isOnlyParticipant:boolean = true;
-        this.vc.userList( "", re => {
-          console.log('RoomPage::constructor() vc.userList callback(): ', re);
-          // Check all user
-          for ( let socket_id in re ) {
-            let user = re[socket_id];
-            if( user.room == myuser.room && user.socket != myuser.socket ){
-              isOnlyParticipant = false;
-              continue;
-            }
-            console.log("The user:",user);
-          }
-          if(isOnlyParticipant && !this.isInitiator){
-            console.log("I know I'm the only one");
-          }else {
-            console.log("I know I'm not the only one");
-          }
-          
-        }); 
-      }
-    });
- 
   }
   //Change canvas image
   changeCanvasPhoto(image) {

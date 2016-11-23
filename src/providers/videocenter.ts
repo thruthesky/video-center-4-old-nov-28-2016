@@ -34,8 +34,8 @@ export let mouse: Mouse = {
 import { Storage } from '@ionic/storage';
 @Injectable()
 export class Videocenter {
-  socketUrl: string = "https://localhost:9001/";
-  // socketUrl: string = "https://videocenter.co.kr:9001/";
+  //socketUrl: string = "https://localhost:9001/";
+  socketUrl: string = "https://videocenter.co.kr:9001/";
   static socket:any = false;
   static connection;
   constructor(
@@ -158,7 +158,7 @@ export class Videocenter {
    * Sets config. key & value
    */
   setConfig( key:string, value:string ) {
-    this.storage.set( key, value );
+    return this.storage.set( key, value );
   }
   getConfig( key: string, callback: ( value: string ) => void ) {
     this.config( key, callback );
@@ -210,9 +210,6 @@ export class Videocenter {
   logout( callback ) {
     this.setConfig('username', '');
     this.emit('log-out', callback );
-  }
-  getMyInfo( callback ) {
-    this.emit('get-my-info', callback );
   }
   userList( roomname: string, callback : any ) : void {
     this.emit('user-list', roomname, callback);
