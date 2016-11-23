@@ -517,7 +517,7 @@ export class RoomPage {
   listenEvents() {
     this.events.subscribe( 'join-room', re => {
       console.log("RoomPage::listenEvents() => someone joins the room: ", re );          
-      let message = { name: re[0].name, message: ' joins into ' + re[0].room };//Set Message
+      let message = { name: re[0].name, message: ' joins into ' + re[0].room };
       this.addMessage( message );    
     });    
     this.events.subscribe( 'chatMessage', re => {
@@ -527,16 +527,27 @@ export class RoomPage {
     });
     this.events.subscribe( 'whiteboard', re => {
       let data = re[0];
+      console.log("RoomPage::listenEvents() =>Whiteboard: ", data );
       if ( data.command == 'image' ) {
           this.changeCanvasPhoto(data.image);
       }
     });
-    this.events.subscribe( 'you-are-new-owner', re => this.eventYouAreNewOwner(re));   
+    this.events.subscribe( 'you-are-new-owner', re =>{
+       let data = re[0];
+       console.log("RoomPage::listenEvents() =>You are the new initiator: ", data );
+       this.eventYouAreNewOwner(re)
+    });   
     this.events.subscribe( 'room-cast', re => {
       let data = re[0];
+      console.log("RoomPage::listenEvents() => Someone roomcast inside the room: ", data );
       if ( data.command == 'reconnect' ) {
           this.reConnect(data);
       }
+    });
+    this.events.subscribe( 'disconnect', re => {
+      console.log("RoomPage::listenEvents() => someone disconnect the room: ", re );
+      let message = { name: re[0].name, message: ' disconnect into ' + re[0].room };
+      this.addMessage( message );     
     });  
   }
   //Unsubscribe events
