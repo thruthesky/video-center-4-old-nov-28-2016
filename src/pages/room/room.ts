@@ -3,7 +3,7 @@ import * as x from '../../providers/videocenter';
 import { LobbyPage } from '../lobby/lobby';
 import { Post } from '../../fireframe2/post';
 import { Data } from '../../fireframe2/data';
-import * as _ from 'lodash';
+//import * as _ from 'lodash';
 import { Platform, NavController, NavParams, AlertController, ActionSheetController, Events } from 'ionic-angular';
 export interface MESSAGELIST {
     messages: Array< x.MESSAGE >
@@ -56,6 +56,8 @@ export class RoomPage {
   userId:string = '';
   firstChangeVideo:boolean = false;
   firstChangeAudio:boolean = false;
+
+  private connection = null;
   constructor(
     public navCtrl: NavController, 
     private vc: x.Videocenter,
@@ -65,23 +67,40 @@ export class RoomPage {
     private alertCtrl: AlertController,
     private actionSheetCtrl: ActionSheetController,
     private file: Data,
-    private navParams: NavParams,) {
-      let connection = x.Videocenter.connection;
-      connection.sdpConstraints.mandatory = {
+    private navParams: NavParams) {
+
+      
+      this.init();
+      this.joinRoom();
+      /*
+      setTimeout(()=>{
+        console.log('renegotiate:');
+        this.connection.renegotiate();
+      }, 1000);
+      */
+      this.connection.onstream = (event) => this.addUserVideo( event ); // A new user's video stream arrives
+      setTimeout(()=>{ this.showSettings()},1000);
+  }
+
+  init() {
+      this.connection = x.Videocenter.connection;
+      this.connection.sdpConstraints.mandatory = {
           OfferToReceiveAudio: true,
           OfferToReceiveVideo: true
       };
-      this.whiteboardContainer = document.getElementById('whiteboard-container');
-      if ( platform.is('cordova') ) this.cordova = true;
-      this.postKey = navParams.get('postKey');
       this.defaultAudio = false;
       this.defaultVideo = false;
       this.inputMessage = '';
+      this.whiteboardContainer = document.getElementById('whiteboard-container');
+      if ( this.platform.is('cordova') ) this.cordova = true;
       if ( this.listMessage[0] === void 0 ) {
         this.listMessage[0] = { messages: [] };
       }
+  }
+
+  joinRoom() {
       //First get the stored roomname
-      vc.getRoomname().then( roomname => {
+      this.vc.getRoomname().then( roomname => {
         console.log("vc.getRoomname()",roomname);
         //then join inside the room
         this.vc.joinRoom( roomname, (re)=> {
@@ -89,54 +108,25 @@ export class RoomPage {
           this.roomTitle = re.room;
           let data :any = { room_name : re.room };
           data.command = "history";
+
           //get whiteboard history
           this.vc.whiteboard( data,() => { console.log("get whiteboard history")} );
-          //Check if room exist in video session
-          console.log("Check if room %s exist",re.room);
-          connection.checkPresence(re.room, (isRoomEists, roomid) => {
-              //Join if room exist
-              if(isRoomEists) {
-                  console.log("I Join a room");
-                  connection.join(roomid);
-              }
-              //Create a new room
-              else {
-                console.log("I Open a room");
-                  connection.open(roomid);
-              }
+
+          //let username = this.vc.getUsername();
+          //console.log('username: ' + username);
+          // user username instead of re.room
+          this.connection.openOrJoin(re.room, () => {
+            this.connection.socket.on(this.connection.socketCustomEvent, message => {
+              //alert(message);
+              // this.connection.renegotiate( message );
+            });
+            let msg = this.connection.userid;
+            console.log('msg: ', msg);
+            this.connection.socket.emit(this.connection.socketCustomEvent, msg);
           });
         });
       });
-     
-      // load the files
-      this.loadPosts();
-  
-      // File Upload
-      if ( this.postKey ) {
-          console.log("PostEditPage:: post edit key=" + this.postKey);
-          this.post
-            .set('key', this.postKey)
-            .get( snapValue => {
-              if( snapValue ) {
-                console.info('snapValue:: ', snapValue);
-                this.data.key = this.postKey ;
-                this.data.namePhoto = snapValue.namePhoto;
-                this.data.urlPhoto = snapValue.urlPhoto;
-                this.data.refPhoto = snapValue.refPhoto;
-                this.urlPhoto = this.data.urlPhoto;
-              }else {
-                console.log('Key Doesnt Exist');
-              }
-
-            },e =>{
-              console.info('Post get() fail on key:' + this.postKey + ', Error:' + e);
-            });
-        }
-      // A new user's video stream arrives
-      connection.onstream = (event) => this.addUserVideo( event );
-      setTimeout(()=>{ this.showSettings()},1000);
   }
-
 
   /**
    * 
@@ -144,13 +134,12 @@ export class RoomPage {
    */
   // Adding video & audio settings
   showSettings() {
-    let connection = x.Videocenter.connection;
  
     /**
      * @todo Open camera first and change camera...
      */
-    connection.DetectRTC.load(() => {
-        connection.DetectRTC.MediaDevices.forEach((device) => {
+    this.connection.DetectRTC.load(() => {
+        this.connection.DetectRTC.MediaDevices.forEach((device) => {
       
             if(device.kind.indexOf('video') !== -1) {
                
@@ -176,7 +165,7 @@ export class RoomPage {
                   this.defaultAudio = true;
                   this.vc.setConfig('default-audio',audio.value);
                 }
-                if(connection.mediaConstraints.audio.optional.length && connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
+                if( this.connection.mediaConstraints.audio.optional.length && this.connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
                     console.log(device.id);
                 }
             }
@@ -270,36 +259,37 @@ export class RoomPage {
     actionSheet.present();
   }
   removeStream() {
-    let connection = x.Videocenter.connection;
     //For disconnecting the user from room
-    connection.getAllParticipants().forEach((p) =>{
+    this.connection.getAllParticipants().forEach((p) =>{
       console.log("p");
       
-      connection.disconnectWith(p); // optional but suggested
+      this.connection.disconnectWith(p); // optional but suggested
      
     });
     //Stop the streaming of video
-    connection.attachStreams.forEach((stream) =>{
+    this.connection.attachStreams.forEach((stream) =>{
         stream.stop(); // optional
     });
   }
   //Leave the room and go back to lobby
   onClickLobby() {
-    let connection = x.Videocenter.connection;
+    this.vc.setConfig('roomname', null);
+    location.reload();
+    /*
     this.firstChangeVideo = false;
     this.firstChangeAudio = false;
-    connection.isInitiator = false;
+    this.connection.isInitiator = false;
     this.vc.leaveRoom(()=> {
       this.unListenEvents(); // unsubscribe room events before joining to lobby
       this.navCtrl.setRoot( LobbyPage );
-      connection.closeEntireSession(); // strongly recommended
+      this.connection.closeEntireSession(); // strongly recommended
     });
+    */
   }
   //Add video when there's a new stream
   addUserVideo( event ) {
-    let connection = x.Videocenter.connection;
     let me: string = 'you';
-    if ( connection.userid == event.userid ) me = 'me';
+    if ( this.connection.userid == event.userid ) me = 'me';
     let video = event.mediaElement;
     video.setAttribute('class', me);
     let videos= document.getElementById('video-container');
@@ -315,17 +305,16 @@ export class RoomPage {
 
   //Change video device
   changeVideo( videoSourceId ) {
-    let connection = x.Videocenter.connection;
     this.vc.setConfig('default-video',videoSourceId);
     //Check if device is already selected
-    if(connection.mediaConstraints.video.optional.length && connection.attachStreams.length) {
-        if(connection.mediaConstraints.video.optional[0].sourceId === videoSourceId) {
+    if(this.connection.mediaConstraints.video.optional.length && this.connection.attachStreams.length) {
+        if(this.connection.mediaConstraints.video.optional[0].sourceId === videoSourceId) {
             alert('Selected video device is already selected.');
             return;
         }
     }
     if(this.firstChangeVideo) {
-      connection.attachStreams.forEach((stream) =>{
+      this.connection.attachStreams.forEach((stream) =>{
         stream.getVideoTracks().forEach((track) =>{
           stream.removeTrack(track);
           if(track.stop) {
@@ -338,30 +327,29 @@ export class RoomPage {
       this.firstChangeVideo = true;
     }
     
-    connection.mediaConstraints.video.optional = [{
+    this.connection.mediaConstraints.video.optional = [{
         sourceId: videoSourceId
     }];
     
     let video = document.getElementsByClassName('me')[0];
     if(video) {
       video.parentNode.removeChild( video );
-      connection.captureUserMedia();
+      this.connection.captureUserMedia();
     }
   }
   //Change audio device
   changeAudio( audioSourceId ) {
-    let connection = x.Videocenter.connection;
     this.vc.setConfig('default-audio',audioSourceId);
      //Check if device is already selected
-    if(connection.mediaConstraints.audio.optional.length && connection.attachStreams.length) {
-        if(connection.mediaConstraints.audio.optional[0].sourceId === audioSourceId) {
+    if(this.connection.mediaConstraints.audio.optional.length && this.connection.attachStreams.length) {
+        if(this.connection.mediaConstraints.audio.optional[0].sourceId === audioSourceId) {
             alert('Selected audio device is already selected.');
             return;
         }
     }
 
     if(this.firstChangeAudio) {
-      connection.attachStreams.forEach((stream) =>{
+      this.connection.attachStreams.forEach((stream) =>{
         stream.getAudioTracks().forEach((track) =>{
           stream.removeTrack(track);
           if(track.stop) {
@@ -374,14 +362,14 @@ export class RoomPage {
       this.firstChangeAudio = true;
     }
     
-    connection.mediaConstraints.audio.optional = [{
+    this.connection.mediaConstraints.audio.optional = [{
         sourceId: audioSourceId
     }];
     
     let video = document.getElementsByClassName('me')[0];
     if(video) {
       video.parentNode.removeChild( video )
-      connection.captureUserMedia();
+      this.connection.captureUserMedia();
     }
     
   }
@@ -457,22 +445,6 @@ export class RoomPage {
         console.log( 'onclickPost::Failed' + e );
     });
   }
-  //get list of uploaded files in firebase
-  loadPosts( infinite? ) {
-    this.post
-      .gets( data => {
-        if ( ! _.isEmpty(data) ) this.displayPosts( data );
-      },
-      e => {
-        console.log("fetch failed: ", e);
-      });
-  }
-  //Put it inside posts to use in view
-  displayPosts( data ) {
-      for( let key of Object.keys(data).reverse() ) {
-        this.posts.push ( {key: key, value: data[key]} );
-      }
-  }
   /**
    * 
    * Ionic Life Cycle
@@ -503,8 +475,6 @@ export class RoomPage {
       console.log("RoomPage::listenEvents() => someone joins the room: ", re );          
       let message = { name: re[0].name, message: ' joins into ' + re[0].room };
       this.addMessage( message );
-      let connection = x.Videocenter.connection;
-      connection.renegotiate();
     });    
     this.events.subscribe( 'chatMessage', re => {
       console.log("RoomPage::listenEvents() => One user receive message: ", re ); 
@@ -526,6 +496,7 @@ export class RoomPage {
       console.log("RoomPage::listenEvents() => someone disconnect the room: ", re );
       let message = { name: re[0].name, message: ' disconnect into ' + re[0].room };
       this.addMessage( message );
+      location.reload();
     });  
   }
   //Unsubscribe events

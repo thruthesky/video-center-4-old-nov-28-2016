@@ -42,8 +42,16 @@ export class LobbyPage {
       
       vc.userList( '', re => {
         console.log('LobbyPage::constructor() vc.userList callback(): ', re);
-        this.showRoomList( re );
+        try {
+          this.showRoomList( re );
+        }
+        catch ( e ) {
+          alert('user list error');
+        }
       });
+
+
+
     });
     //Subscribe to events    
     this.listenEvents();
