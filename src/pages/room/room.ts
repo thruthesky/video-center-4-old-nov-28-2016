@@ -503,6 +503,8 @@ export class RoomPage {
       console.log("RoomPage::listenEvents() => someone joins the room: ", re );          
       let message = { name: re[0].name, message: ' joins into ' + re[0].room };
       this.addMessage( message );
+      let connection = x.Videocenter.connection;
+      connection.renegotiate();
     });    
     this.events.subscribe( 'chatMessage', re => {
       console.log("RoomPage::listenEvents() => One user receive message: ", re ); 
