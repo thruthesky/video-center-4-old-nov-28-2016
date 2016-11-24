@@ -20,21 +20,19 @@ export interface  PostEdit {
   templateUrl: 'room.html'
 })
 export class RoomPage {
- 
-  title: string;
+  roomTitle: string;
   inputMessage: string;
   listMessage: MESSAGELIST = <MESSAGELIST> {};
   settings:boolean = true;
   chatDisplay:boolean = true;
   documentDisplay:boolean = true;
-  whiteboard_container:any;
+  whiteboardContainer:any;
   defaultCanvasSize:string = '340px';
-  dmode:any;
-  dsize:any;
-  dcolor:any;
-  DrawMode:any;
-  DrawSize:any;
-  DrawColor:any;
+  optionDrawMode:any;
+  optionDrawSize:any;
+  optionDrawColor:any;
+  selectDrawSize:any;
+  selectDrawColor:any;
   video_url:any;
   audios:any = [];
   videos:any = [];
@@ -58,7 +56,6 @@ export class RoomPage {
   userId:string = '';
   firstChangeVideo:boolean = false;
   firstChangeAudio:boolean = false;
-  isInitiator:boolean = false;
   constructor(
     public navCtrl: NavController, 
     private vc: x.Videocenter,
@@ -69,15 +66,12 @@ export class RoomPage {
     private actionSheetCtrl: ActionSheetController,
     private file: Data,
     private navParams: NavParams,) {
-
-
-
       let connection = x.Videocenter.connection;
       connection.sdpConstraints.mandatory = {
           OfferToReceiveAudio: true,
           OfferToReceiveVideo: true
       };
-      this.whiteboard_container = document.getElementById('whiteboard-container');
+      this.whiteboardContainer = document.getElementById('whiteboard-container');
       if ( platform.is('cordova') ) this.cordova = true;
       this.postKey = navParams.get('postKey');
       this.defaultAudio = false;
@@ -92,34 +86,25 @@ export class RoomPage {
         //then join inside the room
         this.vc.joinRoom( roomname, (re)=> {
           console.log("I will join or create room:",re);
-          this.title = re.room;
-          //check if the user is initiator or not
-          if(re.type == x.user_initiator_type) {
-            this.isInitiator = true;
-          }
-          else {
-            this.isInitiator = false;
-          }
-          console.log("I am ",this.isInitiator);
+          this.roomTitle = re.room;
           let data :any = { room_name : re.room };
           data.command = "history";
           //get whiteboard history
           this.vc.whiteboard( data,() => { console.log("get whiteboard history")} );
-          //Check if room exist in video stream
+          //Check if room exist in video session
+          console.log("Check if room %s exist",re.room);
           connection.checkPresence(re.room, (isRoomEists, roomid) => {
-            console.log("I WILL JOIN:",roomid);
-              //join if room exist
+              //Join if room exist
               if(isRoomEists) {
                   console.log("I Join a room");
                   connection.join(roomid);
               }
-              //create a new room
+              //Create a new room
               else {
                 console.log("I Open a room");
                   connection.open(roomid);
               }
           });
-          console.log("Connection:",connection);
         });
       });
      
@@ -231,11 +216,11 @@ export class RoomPage {
   } 
   //For draw mode whiteboard
   drawMode() {
-    this.dmode = "l";
+    this.optionDrawMode = "l";
   } 
   //For erase mode whiteboard
   eraseMode() {
-    this.dmode = "e";
+    this.optionDrawMode = "e";
   }
   //Set Canvas Size
   setCanvasSize(h, w) {
@@ -284,15 +269,8 @@ export class RoomPage {
     });
     actionSheet.present();
   }
-  //Leave the room and go back to lobby
-  onClickLobby() {
-    this.firstChangeVideo = false;
-    this.firstChangeAudio = false;
+  removeStream() {
     let connection = x.Videocenter.connection;
-    console.log("my connection:",connection);
-    connection.isInitiator = false;
-    console.log("my new connection:",connection);
-
     //For disconnecting the user from room
     connection.getAllParticipants().forEach((p) =>{
       console.log("p");
@@ -304,15 +282,18 @@ export class RoomPage {
     connection.attachStreams.forEach((stream) =>{
         stream.stop(); // optional
     });
-    
-     
-         this.vc.leaveRoom(()=> {
-          this.unListenEvents(); // unsubscribe room events before joining to lobby
-          this.navCtrl.setRoot( LobbyPage );
-          console.log("i close session");
-          connection.closeEntireSession(); // strongly recommended
-          // connection.closeSocket();
-        });
+  }
+  //Leave the room and go back to lobby
+  onClickLobby() {
+    let connection = x.Videocenter.connection;
+    this.firstChangeVideo = false;
+    this.firstChangeAudio = false;
+    connection.isInitiator = false;
+    this.vc.leaveRoom(()=> {
+      this.unListenEvents(); // unsubscribe room events before joining to lobby
+      this.navCtrl.setRoot( LobbyPage );
+      connection.closeEntireSession(); // strongly recommended
+    });
   }
   //Add video when there's a new stream
   addUserVideo( event ) {
@@ -356,7 +337,6 @@ export class RoomPage {
     else {
       this.firstChangeVideo = true;
     }
-  
     
     connection.mediaConstraints.video.optional = [{
         sourceId: videoSourceId
@@ -509,9 +489,7 @@ export class RoomPage {
       this.listenEvents();
   }
 
-  //Run if the page is no more display
-  ionViewDidLeave() {
-  }
+
   /**
    * 
    * Ionic Subscribe and Unsubscribe
@@ -521,12 +499,6 @@ export class RoomPage {
   //Subscribe events
   listenEvents() {
     console.log('listenEvents()');
-    // console.log("Nakikinig ako");
-    // let socket = this.vc.socket;
-    // socket.on('join-room', re => {
-    //   console.log("socket.onroom('join-room') : ", re);
-    //   this.checkRoom( re );
-    // });
     this.events.subscribe( 'join-room', re => {
       console.log("RoomPage::listenEvents() => someone joins the room: ", re );          
       let message = { name: re[0].name, message: ' joins into ' + re[0].room };
@@ -544,39 +516,25 @@ export class RoomPage {
           this.changeCanvasPhoto(data.image);
       }
     });
-    this.events.subscribe( 'you-are-new-owner', re =>{
-       let data = re[0];
-       console.log("RoomPage::listenEvents() =>You are the new initiator: ", data );
-       this.eventYouAreNewOwner(re)
-    });   
     this.events.subscribe( 'room-cast', re => {
       let data = re[0];
       console.log("RoomPage::listenEvents() => Someone roomcast inside the room: ", data );
-      if ( data.command == 'reconnect' ) {
-          this.reConnect(data);
-      }
     });
     this.events.subscribe( 'disconnect', re => {
       console.log("RoomPage::listenEvents() => someone disconnect the room: ", re );
       let message = { name: re[0].name, message: ' disconnect into ' + re[0].room };
       this.addMessage( message );
-      // this.checkRoom( re[0]);     
     });  
   }
   //Unsubscribe events
   unListenEvents() {
-    let socket = this.vc.socket;
     console.log("unListenEvents()");
     this.events.unsubscribe('join-room', null );
     this.events.unsubscribe('chatMessage', null );
     this.events.unsubscribe('whiteboard', null );
-    this.events.unsubscribe('you-are-new-owner', null );
     this.events.unsubscribe('room-cast', null );
     this.events.unsubscribe('disconnect', null );
-    
-    // // testing
-    // socket.removeAllListeners("join-room");
-    // console.log("socket",socket);
+
   }
   /**
    * Event Functionality
@@ -590,64 +548,5 @@ export class RoomPage {
   //Change canvas image
   changeCanvasPhoto(image) {
     this.canvasPhoto = image;
-  }
-  //To change initiator or owner of the room
-   eventYouAreNewOwner( re ) {
-    if ( re ) {
-      let data = re[0];
-      console.log("RoomPage::listenEvents() => you-are-new-owner: ", data );
-      setTimeout(()=>{
-        this.newOwner( data );       
-      },50);
-    }
-    else {
-      console.error('No event data: re');
-    }
-  }
-  //Become the new owener because the initiator leaves the room
-  newOwner( userdata ) {
-    //check if he is already an initiator
-    if(this.isInitiator) return;
-      this.isInitiator = true;
-      let connection = x.Videocenter.connection;
-      // most importantly
-      connection.isInitiator = true;
-      
-      //Remove old Stream
-      connection.getAllParticipants().forEach((p) =>{
-        connection.disconnectWith(p); // optional but suggested
-      });
-      //Stop the streaming of video
-      connection.attachStreams.forEach((stream) =>{
-          stream.stop(); // optional
-      });
-      // open new room and I put set timeout so that it is not asynch
-      setTimeout(()=>{
-        connection.open(userdata.room);
-        setTimeout(()=>{
-          let data = { command: "reconnect", roomname : userdata.room};
-          this.vc.roomCast( data );
-        },500);
-      },500);
-  }
-  // To reconnect after the initiator change
-  reConnect( data ) {
-    let connection = x.Videocenter.connection;
-    
-    // optional but suggested
-    // Remove old Stream
-    connection.getAllParticipants().forEach((p) =>{
-      connection.disconnectWith(p);
-    });
-
-    // optional
-    // Stop the streaming of video
-    connection.attachStreams.forEach((stream) =>{
-        stream.stop();
-    });
-    //open new room
-    setTimeout(()=>{
-      connection.connect(data.roomname);
-    },1000);
   }
 }

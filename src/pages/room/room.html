@@ -70,7 +70,7 @@
     <div id="canvas-image">
       <img [src]="canvasPhoto">
     </div>
-    <canvas mycanvas id="mycanvas" [drawSize]="dsize" [drawColor]="dcolor" [drawMode]="dmode"></canvas>
+    <canvas mycanvas id="mycanvas" [drawSize]="optionDrawSize" [drawColor]="optionDrawColor" [drawMode]="optionDrawMode"></canvas>
     <i>
     
     <button ion-button color="dark" (click)="drawMode()" id="ion-draw">
@@ -88,7 +88,7 @@
 
     <button ion-button color="dark" class="color">
       <ion-icon name="md-color-palette"></ion-icon>
-      <ion-select [(ngModel)]="DrawColor" (ngModelChange)="dcolor = $event" cancelText="Cancel" okText="Okay">
+      <ion-select [(ngModel)]="selectDrawColor" (ngModelChange)="optionDrawColor = $event" cancelText="Cancel" okText="Okay">
         <ion-option value="#161515">Black</ion-option>
         <ion-option value="#57646B">Grey</ion-option>
         <ion-option value="#fff">White</ion-option>
@@ -100,7 +100,7 @@
 
     <button ion-button color="dark" class="size">
       <ion-icon name="md-options"></ion-icon>
-      <ion-select [(ngModel)]="DrawSize" (ngModelChange)="dsize = $event" cancelText="Cancel" okText="Okay">
+      <ion-select [(ngModel)]="selectDrawSize" (ngModelChange)="optionDrawSize = $event" cancelText="Cancel" okText="Okay">
         <ion-option value="2">Small</ion-option>
         <ion-option value="5">Medium</ion-option>
         <ion-option value="8">Large</ion-option>     
