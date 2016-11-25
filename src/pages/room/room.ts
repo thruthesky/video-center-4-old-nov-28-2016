@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import * as x from '../../providers/videocenter';
-import { LobbyPage } from '../lobby/lobby';
 import { Post } from '../../fireframe2/post';
 import { Data } from '../../fireframe2/data';
 //import * as _ from 'lodash';
@@ -115,7 +114,12 @@ export class RoomPage {
           //let username = this.vc.getUsername();
           //console.log('username: ' + username);
           // user username instead of re.room
-          this.connection.openOrJoin(re.room, () => {
+          this.connection.openOrJoin(re.room, (roomExist) => {
+            if(roomExist) {
+              console.log("I Join the Room");
+            } else {
+              console.log("I Open the Room");
+            }
             this.connection.socket.on(this.connection.socketCustomEvent, message => {
               //alert(message);
               // this.connection.renegotiate( message );
@@ -273,7 +277,7 @@ export class RoomPage {
   }
   //Leave the room and go back to lobby
   onClickLobby() {
-    this.vc.setConfig('roomname', null);
+    this.vc.setConfig('roomname', x.LobbyRoomName );
     location.reload();
     /*
     this.firstChangeVideo = false;
