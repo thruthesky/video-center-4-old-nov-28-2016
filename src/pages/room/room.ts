@@ -2,12 +2,20 @@ import { Component } from '@angular/core';
 import * as x from '../../providers/videocenter';
 import { Post } from '../../fireframe2/post';
 import { Data } from '../../fireframe2/data';
-//import * as _ from 'lodash';
 import { Platform, NavController, NavParams, AlertController, ActionSheetController, Events } from 'ionic-angular';
+/**
+*@desc Interface use for listMessage Object 
+*@prop messages
+*@type Array< x.MESSAGE > 
+*/
 export interface MESSAGELIST {
     messages: Array< x.MESSAGE >
 }
-
+/**
+*@desc Interface use for fileData Object 
+*@prop key, namePhoto, urrlPhoto, refPhoto
+*@type string, string, string, string
+*/
 export interface  PostEdit {
     key : string;
     namePhoto : string;
@@ -18,6 +26,9 @@ export interface  PostEdit {
   selector: 'page-room',
   templateUrl: 'room.html'
 })
+/**
+*@desc This class will hold functions for RoomPage
+*/
 export class RoomPage {
   roomTitle: string;
   inputMessage: string;
@@ -26,7 +37,6 @@ export class RoomPage {
   chatDisplay:boolean = true;
   documentDisplay:boolean = true;
   whiteboardContainer:any;
-  defaultCanvasSize:string = '340px';
   optionDrawMode:any;
   optionDrawSize:any;
   optionDrawColor:any;
@@ -39,7 +49,7 @@ export class RoomPage {
   defaultAudio:any;
   selectedVideo:any;
   defaultVideo:any;
-  data : PostEdit = <PostEdit> {};
+  fileData : PostEdit = <PostEdit> {};
   postKey: string;
   urlPhoto: string = "x-assets/1.png";
   position:number = 0;
@@ -49,14 +59,13 @@ export class RoomPage {
   cordova: boolean = false;
   posts = [];
   noMorePost: boolean = false;
-  connectingToServer:string = 'Connecting to server...'
   canvasPhoto: string = "x-assets/1.png";
-  streamId:string = '';
-  userId:string = '';
   firstChangeVideo:boolean = false;
   firstChangeAudio:boolean = false;
-
   private connection = null;
+  /**
+  *@desc This constructor is the start after insantiating this class
+  */
   constructor(
     public navCtrl: NavController, 
     private vc: x.Videocenter,
@@ -67,20 +76,15 @@ export class RoomPage {
     private actionSheetCtrl: ActionSheetController,
     private file: Data,
     private navParams: NavParams) {
-
-      
       this.init();
       this.joinRoom();
-      /*
-      setTimeout(()=>{
-        console.log('renegotiate:');
-        this.connection.renegotiate();
-      }, 1000);
-      */
-      this.connection.onstream = (event) => this.addUserVideo( event ); // A new user's video stream arrives
+      this.connection.onstream = (event) => this.addUserVideo( event ); 
       setTimeout(()=>{ this.showSettings()},1000);
   }
-
+  /**
+  *@desc This method will initialize 
+  *the some of the properties of RoomPage
+  */
   init() {
       this.connection = x.Videocenter.connection;
       this.connection.sdpConstraints.mandatory = {
@@ -96,138 +100,144 @@ export class RoomPage {
         this.listMessage[0] = { messages: [] };
       }
   }
-
-  joinRoom() {
-      //First get the stored roomname
-      this.vc.getRoomname().then( roomname => {
-        console.log("vc.getRoomname()",roomname);
-        //then join inside the room
-        this.vc.joinRoom( roomname, (re)=> {
-          console.log("I will join or create room:",re);
-          this.roomTitle = re.room;
-          let data :any = { room_name : re.room };
-          data.command = "history";
-
-          //get whiteboard history
-          this.vc.whiteboard( data,() => { console.log("get whiteboard history")} );
-
-          //let username = this.vc.getUsername();
-          //console.log('username: ' + username);
-          // user username instead of re.room
-          this.connection.openOrJoin(re.room, (roomExist) => {
-            if(roomExist) {
-              console.log("I Join the Room");
-            } else {
-              console.log("I Open the Room");
-            }
-            this.connection.socket.on(this.connection.socketCustomEvent, message => {
-              //alert(message);
-              // this.connection.renegotiate( message );
-            });
-            let msg = this.connection.userid;
-            console.log('msg: ', msg);
-            this.connection.socket.emit(this.connection.socketCustomEvent, msg);
-          });
-        });
-      });
-  }
-
   /**
-   * 
-   * For Video and Audio function
-   */
-  // Adding video & audio settings
-  showSettings() {
- 
-    /**
-     * @todo Open camera first and change camera...
-     */
-    this.connection.DetectRTC.load(() => {
-        this.connection.DetectRTC.MediaDevices.forEach((device) => {
-      
-            if(device.kind.indexOf('video') !== -1) {
-               
-                let video = {
-                  text: device.label || device.id,
-                  value: device.id
-                };
-                
-                this.videos.push( video );
-                if(!this.defaultVideo){
-                  this.defaultVideo = true;
-                  this.vc.setConfig('default-video',video.value);
-                }
-         
-            }
-            if(device.kind === 'audioinput') {
-                let audio = {
-                    text: device.label || device.id,
-                    value: device.id
-                  };
-                this.audios.push( audio );
-                if(!this.defaultAudio){
-                  this.defaultAudio = true;
-                  this.vc.setConfig('default-audio',audio.value);
-                }
-                if( this.connection.mediaConstraints.audio.optional.length && this.connection.mediaConstraints.audio.optional[0].sourceId === device.id) {
-                    console.log(device.id);
-                }
-            }
-        });
-        this.getDefaultAudio();
-        this.getDefaultVideo();
+  *@desc This method will get roomname then join the roomname
+  *it will also run getWhiteboardHistory and openOrJoinSession
+  */
+  joinRoom() {
+    this.vc.getRoomname().then( roomname => {
+      this.vc.joinRoom( roomname, (re)=> {
+        this.roomTitle = re.room;
+        this.getWhiteboardHistory( re.room )
+        this.openOrJoinSession( re.room );
+      });
     });
   }
-  //Get default audio from storage
+  /**
+  *@desc This method will get the whiteboard history of the room
+  *@param roomName 
+  */
+  getWhiteboardHistory( roomName ) {
+    let data :any = { room_name : roomName };
+    data.command = "history";
+    this.vc.whiteboard( data,() => { console.log("get whiteboard history")} );
+  }
+  /**
+  *@desc This method will open or join a session to have a video conference
+  *@param roomName
+  */
+  openOrJoinSession( roomName ) {
+    this.connection.openOrJoin( roomName, (roomExist) => {
+      if(roomExist)console.log("I Join the Room");
+      else console.log("I Open the Room");
+      this.connection.socket.on(this.connection.socketCustomEvent, message => { } );
+      let msg = this.connection.userid;
+      this.connection.socket.emit(this.connection.socketCustomEvent, msg);
+    });
+  }
+  /**
+  *@desc This method will add device for video select and audio select
+  */
+  showSettings() {
+    this.connection.DetectRTC.load(() => {
+      this.connection.DetectRTC.MediaDevices.forEach((device) => {
+        this.addVideoOption( device );
+        this.addAudioOption( device );
+      });
+      this.getDefaultAudio();
+      this.getDefaultVideo();
+    });
+  }
+  /**
+  *@desc This method will add video options on video select
+  *@param device 
+  */
+  addVideoOption( device ) {
+    if(device.kind.indexOf('video') !== -1) {
+      let video = {
+        text: device.label || device.id,
+        value: device.id
+      };
+      this.videos.push( video );
+      if(!this.defaultVideo) {
+        this.defaultVideo = true;
+        this.vc.setConfig('default-video',video.value);
+      }
+    }
+  }
+  /**
+  *@desc This method will add audio options on audio select
+  *@param device
+  */
+  addAudioOption ( device ) {
+    if(device.kind === 'audioinput') {
+      let audio = {
+          text: device.label || device.id,
+          value: device.id
+        };
+      this.audios.push( audio );
+      if(!this.defaultAudio) {
+        this.defaultAudio = true;
+        this.vc.setConfig('default-audio',audio.value);
+      }
+    }
+  }
+  /**
+  *@desc This method will get the selected audio from storage
+  */
   getDefaultAudio(){
     this.vc.config('default-audio',(value)=>{
       this.selectedAudio = value;
     });
   }
-  //Get default video from storage
+  /**
+  *@desc This method will get the selected video from storage
+  */
   getDefaultVideo(){
     this.vc.config('default-video',(value)=>{
       this.selectedVideo = value;
     });
   }
-  
-  //Remove video stream
-  removeVideoStream( data ) {
-    let video = document.getElementById(data.streamId);
-    console.log("remover video",video);
-    if(!video) return;
-    video.parentNode.removeChild(video);
-  }
-  
   /**
-   * 
-   * For Whiteboard Functionality
+   * @desc Group for Whiteboard Functionality
    */
-  //clear canvas
+
+  /**
+   *@desc This method clear the canvas
+   */
   onClickClear() {
     this.events.publish( 'click-clear-canvas' );
   } 
-  //For draw mode whiteboard
+  /**
+   *@desc This method will change the optionDrawMode to l - line
+   */
   drawMode() {
     this.optionDrawMode = "l";
   } 
-  //For erase mode whiteboard
+  /**
+   *@desc This method will change the optionDrawMode to e - erase
+   */
   eraseMode() {
     this.optionDrawMode = "e";
   }
-  //Set Canvas Size
-  setCanvasSize(h, w) {
+  /**
+   *@desc This method will set the canvas size
+   *@param height
+   *@param width
+   */
+  setCanvasSize( height, width ) {
      let mycanvas= document.getElementById('mycanvas');
-     mycanvas.setAttribute('height', h);
-     mycanvas.setAttribute('width', w);
+     mycanvas.setAttribute('height', height);
+     mycanvas.setAttribute('width', width);
   }
 
   /**
-   * 
-   * Ionic Function
+   *@desc Group of Ionic Methods
    */
   
-  //To show settings with action sheet
+  /**
+   *@desc This method will show Miscellaneous with actionsheet
+   */
   showMiscellaneous() {
     let actionSheet = this.actionSheetCtrl.create({
       title: 'Miscellaneous',
@@ -262,110 +272,84 @@ export class RoomPage {
     });
     actionSheet.present();
   }
-  removeStream() {
-    //For disconnecting the user from room
-    this.connection.getAllParticipants().forEach((p) =>{
-      console.log("p");
-      
-      this.connection.disconnectWith(p); // optional but suggested
-     
-    });
-    //Stop the streaming of video
-    this.connection.attachStreams.forEach((stream) =>{
-        stream.stop(); // optional
-    });
-  }
-  //Leave the room and go back to lobby
+  
+  /**
+   *@desc This method will Leave the room and go back to lobby
+   */
   onClickLobby() {
     let random = this.vc.getRandomInt(0,500);
     setTimeout( ()=> { this.vc.setConfig('roomname', x.LobbyRoomName ); }, random);
     location.reload();
-    /*
-    this.firstChangeVideo = false;
-    this.firstChangeAudio = false;
-    this.connection.isInitiator = false;
-    this.vc.leaveRoom(()=> {
-      this.unListenEvents(); // unsubscribe room events before joining to lobby
-      this.navCtrl.setRoot( LobbyPage );
-      this.connection.closeEntireSession(); // strongly recommended
-    });
-    */
   }
-  //Add video when there's a new stream
+  /**
+   *@desc This method will add video when there's a new stream
+   */
   addUserVideo( event ) {
     let me: string = 'you';
-    if ( this.connection.userid == event.userid ) me = 'me';
     let video = event.mediaElement;
-    video.setAttribute('class', me);
     let videos= document.getElementById('video-container');
-    if ( me == 'me' ) {
-      videos.insertBefore(video, videos.firstChild);
-      this.streamId = event.streamid;
-      this.userId = event.userId;
-    }
-    else {
-      videos.appendChild( video );
-    }
+    if ( this.connection.userid == event.userid ) me = 'me';
+    video.setAttribute('class', me);
+    if ( me == 'me' ) videos.insertBefore(video, videos.firstChild);
+    else videos.appendChild( video );
   }
 
-  //Change video device
+  /**
+  *@desc This method will change video device
+  *@param videoSourceId
+  */
   changeVideo( videoSourceId ) {
     this.vc.setConfig('default-video',videoSourceId);
-    //Check if device is already selected
-    if(this.connection.mediaConstraints.video.optional.length && this.connection.attachStreams.length) {
-        if(this.connection.mediaConstraints.video.optional[0].sourceId === videoSourceId) {
-            alert('Selected video device is already selected.');
-            return;
-        }
-    }
-    if(this.firstChangeVideo) {
-      this.connection.attachStreams.forEach((stream) =>{
-        stream.getVideoTracks().forEach((track) =>{
-          stream.removeTrack(track);
-          if(track.stop) {
-              track.stop();
-          }
-        });
-      });
-     }
-    else {
-      this.firstChangeVideo = true;
-    }
-    
+    if(this.videoSelectedAlready( videoSourceId )) return;
+    this.removeVideoTrackAndStream();
     this.connection.mediaConstraints.video.optional = [{
         sourceId: videoSourceId
     }];
-    
     let video = document.getElementsByClassName('me')[0];
     if(video) {
       video.parentNode.removeChild( video );
       this.connection.captureUserMedia();
     }
   }
-  //Change audio device
-  changeAudio( audioSourceId ) {
-    this.vc.setConfig('default-audio',audioSourceId);
-     //Check if device is already selected
-    if(this.connection.mediaConstraints.audio.optional.length && this.connection.attachStreams.length) {
-        if(this.connection.mediaConstraints.audio.optional[0].sourceId === audioSourceId) {
-            alert('Selected audio device is already selected.');
-            return;
-        }
+  /**
+  *@desc This method will check if video is already selected
+  *@param videoSourceId
+  *@return result 
+  */
+  videoSelectedAlready( videoSourceId ) {
+    let result = 0;
+    if(this.connection.mediaConstraints.video.optional.length && this.connection.attachStreams.length) {
+      if(this.connection.mediaConstraints.video.optional[0].sourceId === videoSourceId) {
+          alert('Selected video device is already selected.');
+          result = 1;
+      }
     }
-
-    if(this.firstChangeAudio) {
+    return result;
+  }
+  /**
+  *@desc This method will remove the track and stream of video
+  */
+  removeVideoTrackAndStream() {
+    if(this.firstChangeVideo) {
       this.connection.attachStreams.forEach((stream) =>{
-        stream.getAudioTracks().forEach((track) =>{
+        stream.getVideoTracks().forEach((track) =>{
           stream.removeTrack(track);
-          if(track.stop) {
-              track.stop();
-          }
+          if(track.stop)track.stop();
         });
       });
-    }
+     }
     else {
-      this.firstChangeAudio = true;
+      this.firstChangeVideo = true;
     }
+  }
+  /**
+  *@desc This method will change audio device
+  *@param audioSourceId
+  */
+  changeAudio( audioSourceId ) {
+    this.vc.setConfig('default-audio',audioSourceId);
+    if(this.audioSelectedAlready( audioSourceId )) return;
+    this.removeAudioTrackAndStream();
     
     this.connection.mediaConstraints.audio.optional = [{
         sourceId: audioSourceId
@@ -378,7 +362,42 @@ export class RoomPage {
     }
     
   }
-  //On sending a new message
+  /**
+  *@desc This method will check if audio is already selected
+  *@param audioSourceId
+  *@return result 
+  */
+  audioSelectedAlready( audioSourceId ) {
+    let result = 0;
+    if(this.connection.mediaConstraints.audio.optional.length && this.connection.attachStreams.length) {
+      if(this.connection.mediaConstraints.audio.optional[0].sourceId === audioSourceId) {
+          alert('Selected audio device is already selected.');
+          result = 1;
+      }
+    }
+    return result;
+  }
+  /**
+  *@desc This method will remove the track and stream of audio
+  */
+  removeAudioTrackAndStream() {
+    if(this.firstChangeAudio) {
+      this.connection.attachStreams.forEach((stream) =>{
+        stream.getAudioTracks().forEach((track) =>{
+          stream.removeTrack(track);
+          if(track.stop)track.stop();
+        });
+      });
+    }
+    else {
+      this.firstChangeAudio = true;
+    }
+  }
+  /**
+  *@desc This method will send the new message 
+  *to the server
+  *@param message
+  */
   onSendMessage(message: string) {
     if(message != ""){
       this.vc.sendMessage(message, ()=> {
@@ -386,27 +405,26 @@ export class RoomPage {
       });
     }
   }
-  //Change the canvas image after clicking the preview image inside document
+  /**
+   *@desc This method will Change the canvas image after clicking the preview image inside document
+   */
   onClickPhoto() {
     this.vc.getRoomname().then( roomname => {
       let data :any = { room_name : roomname };
       data.command = "image";
       data.image = this.urlPhoto;
-      this.vc.whiteboard( data,() => { 
-        console.log("Change Whiteboard Image");
-        
-      } );
-      this.changeCanvasPhoto(this.urlPhoto);
+      this.vc.whiteboard( data,() => { this.changeCanvasPhoto(this.urlPhoto); } );
     });
   }
-
-  // File Upload
+  /**
+   *@desc This method will File Upload
+   */
   onChangeFile(event) {
       let file = event.target.files[0];
       if ( file === void 0 ) return;
       this.file_progress = true;
       let ref = 'videocenter/' +  file.name;
-      this.data.namePhoto = file.name;
+      this.fileData.namePhoto = file.name;
       this.file.upload( { file: file, ref: ref }, uploaded => {
           this.onFileUploaded( uploaded.url, uploaded.ref );
       },
@@ -418,24 +436,29 @@ export class RoomPage {
           this.position = percent;
       } );
   }
-  
-  //Change document preview image
+  /**
+   *@desc This method will Change document preview image
+   */
   onChangePhotoDisplay(url){
     this.urlPhoto = url;
   }
-  //after file upload get the data to be posted
+  /**
+   *@desc This method will set the data to post
+   */
   onFileUploaded( url, ref ) {
       this.file_progress = false;
       this.urlPhoto = url;
-      this.data.urlPhoto = url;
-      this.data.refPhoto = ref;
+      this.fileData.urlPhoto = url;
+      this.fileData.refPhoto = ref;
       this.postPhoto();
   }
-  //post the data in firebase
+  /**
+   *@desc This method will post the file data to firebase
+   */
   postPhoto() {
     this.loader = true;
     this.post
-    .sets( this.data )
+    .sets( this.fileData )
     .create( () => {
         this.loader = false;
         let alert = this.alertCtrl.create({
@@ -451,41 +474,61 @@ export class RoomPage {
     });
   }
   /**
-   * 
-   * Ionic Life Cycle
-   * 
+   *@desc Ionic Life Cycle
    */
-  //Called after first Ngonchanges
   ngOnInit() {
-    this.setCanvasSize(this.defaultCanvasSize,this.defaultCanvasSize);
+    this.setCanvasSize('340px', '340px');
   }
 
   ionViewDidLoad() {
     console.log("RoomPage::ionViewDidLoad()");
-      //subscribe to events
       this.listenEvents();
   }
 
 
   /**
-   * 
-   * Ionic Subscribe and Unsubscribe
-   * 
+   *@desc Ionic Subscribe and Unsubscribe
    */
   
-  //Subscribe events
+  /**
+   *@desc This method subscribes to events
+   */
   listenEvents() {
     console.log('listenEvents()');
+    this.listenEventJoinRoom();
+    this.listenEventChatMessage();
+    this.listenEventWhiteboard();
+    this.listenEventRoomCast();
+    this.listenEventDisconnect(); 
+  }
+  /**
+   * @desc Group of event method
+   */
+
+  /**
+   * @desc event listener for Join Room
+   */
+  listenEventJoinRoom() {
     this.events.subscribe( 'join-room', re => {
       console.log("RoomPage::listenEvents() => someone joins the room: ", re );          
       let message = { name: re[0].name, message: ' joins into ' + re[0].room };
       this.addMessage( message );
-    });    
+    });  
+  }
+  /**
+   * @desc event listener for Chat Message
+   */
+  listenEventChatMessage() {
     this.events.subscribe( 'chatMessage', re => {
       console.log("RoomPage::listenEvents() => One user receive message: ", re ); 
       let message = re[0];
       this.addMessage( message );         
     });
+  }
+  /**
+   * @desc event listener for Whiteboard
+   */
+  listenEventWhiteboard() {
     this.events.subscribe( 'whiteboard', re => {
       let data = re[0];
       console.log("RoomPage::listenEvents() =>Whiteboard: ", data );
@@ -493,18 +536,30 @@ export class RoomPage {
           this.changeCanvasPhoto(data.image);
       }
     });
+  }
+  /**
+   * @desc event listener for RoomCast
+   */
+  listenEventRoomCast() {
     this.events.subscribe( 'room-cast', re => {
       let data = re[0];
       console.log("RoomPage::listenEvents() => Someone roomcast inside the room: ", data );
     });
+  }
+  /**
+   * @desc event listener for disconnect
+   */
+  listenEventDisconnect() {
     this.events.subscribe( 'disconnect', re => {
       console.log("RoomPage::listenEvents() => someone disconnect the room: ", re );
       let message = { name: re[0].name, message: ' disconnect into ' + re[0].room };
       this.addMessage( message );
       location.reload();
-    });  
+    }); 
   }
-  //Unsubscribe events
+  /**
+   *@desc This method unsubscribes to events
+   */
   unListenEvents() {
     console.log("unListenEvents()");
     this.events.unsubscribe('join-room', null );
@@ -515,15 +570,20 @@ export class RoomPage {
 
   }
   /**
-   * Event Functionality
-   * 
+   *@desc Event Functionality
    */
-  //Add to listMessage to be displayed in the view  
+  
+  /**
+   *@desc Add to listMessage to be displayed in the view 
+   */
   addMessage( message ) {
     this.listMessage[0].messages.push( message )
     setTimeout(()=>{ this.events.publish( 'scroll-to-bottom' ); }, 100);
   }
-  //Change canvas image
+
+  /**
+   *@desc //Change canvas image
+   */
   changeCanvasPhoto(image) {
     this.canvasPhoto = image;
   }

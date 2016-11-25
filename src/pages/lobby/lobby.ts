@@ -4,14 +4,22 @@ import * as x from '../../providers/videocenter';
 import { RoomPage } from '../room/room';
 import { AlertController } from 'ionic-angular';
 import { EntrancePage } from '../entrance/entrance';
-
+/**
+*@desc Interface use for rooms Object
+*@prop room_id, name, users
+*@type string, object, string, Array< x.USER > 
+*/
 export interface ROOMS {
   ( room_id: string ) : {
     name: string;
     users: Array< x.USER >;
   }
 }
-
+/**
+*@desc Interface use for listMessage Object
+*@prop messages
+*@type Array< x.MESSAGE > 
+*/
 export interface MESSAGELIST {
     messages: Array< x.MESSAGE >
 }
@@ -20,42 +28,56 @@ export interface MESSAGELIST {
   selector: 'page-lobby',
   templateUrl: 'lobby.html',
 })
+/**
+*@desc This class will hold functions for LobbyPage
+*@prop rooms, title, inputMessage, listMessage
+*/
 export class LobbyPage {
   rooms: ROOMS = <ROOMS> {};
   title: string;
   inputMessage: string;
   listMessage: MESSAGELIST = <MESSAGELIST> {};
   constructor(
-    public navCtrl: NavController,
-    private vc: x.Videocenter,
     public alertCtrl: AlertController,
-    private events: Events ) {
+    public navCtrl: NavController,
+    private events: Events,
+    private vc: x.Videocenter) {
     this.inputMessage = '';
     if ( this.listMessage[0] === void 0 ) {
       this.listMessage[0] = { messages: [] };
     }
     //Join the Lobby room
-    vc.joinRoom( x.LobbyRoomName, re => { 
-      //Get username 
-      vc.getUsername().then( username => this.title = username );
-      console.log('LobbyPage::constructor() joinRoom callback:', re);
-      
-      vc.userList( '', re => {
-        console.log('LobbyPage::constructor() vc.userList callback(): ', re);
-        try {
-          this.showRoomList( re );
-        }
-        catch ( e ) {
-          alert('user list error');
-        }
-      });
-
-
-
-    });
+    this.joinLobby();
     //Subscribe to events    
     this.listenEvents();
-
+  }
+  /**
+  *@desc This method will join the lobby
+  */
+  joinLobby() {
+    this.vc.joinRoom( x.LobbyRoomName, re => {
+      console.log('LobbyPage::constructor() joinRoom callback:', re); 
+      //Get username 
+      this.vc.getUsername().then( username => this.title = username );
+      this.getUserList();
+      
+   
+    });
+  }
+  /**
+  *@desc This method will get all the room list and user list
+  *and pass it to showRoomList
+  */
+  getUserList() {
+      this.vc.userList( '', re => {
+      console.log('LobbyPage::constructor() vc.userList callback(): ', re);
+      try {
+        this.showRoomList( re );
+      }
+      catch ( e ) {
+        alert('user list error');
+      }
+    });
   }
   //Update  Username
   onClickUpdateUsername() {

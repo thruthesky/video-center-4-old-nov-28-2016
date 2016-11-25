@@ -16,12 +16,10 @@ export class MyApp {
   constructor(platform: Platform, private vc: x.Videocenter ) {
     vc.connect();
     vc.config('username', username => {
-      /**
-       * 
-       * Check if there's a username
-       * and check if there is also a roomname
-       * 
-       */
+    /**
+     * @desc Check if there's a username
+     * and check if there is also a roomname
+     */
       if ( username ) {
         this.vc.updateUsername( username, re => {
           vc.config('roomname', roomname => {
