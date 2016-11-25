@@ -277,7 +277,8 @@ export class RoomPage {
   }
   //Leave the room and go back to lobby
   onClickLobby() {
-    this.vc.setConfig('roomname', x.LobbyRoomName );
+    let random = this.vc.getRandomInt(0,500);
+    setTimeout( ()=> { this.vc.setConfig('roomname', x.LobbyRoomName ); }, random);
     location.reload();
     /*
     this.firstChangeVideo = false;

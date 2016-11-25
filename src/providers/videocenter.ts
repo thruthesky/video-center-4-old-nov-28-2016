@@ -224,9 +224,14 @@ export class Videocenter {
 
     
     
-    md5( str: string ) : string {
-      let md = new Md5();
-      md.appendStr( str );
-      return <string> md.end();
-    }
+  md5( str: string ) : string {
+    let md = new Md5();
+    md.appendStr( str );
+    return <string> md.end();
+  }
+  getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
+  }
 }
