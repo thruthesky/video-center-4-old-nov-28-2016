@@ -29,8 +29,10 @@ export interface MESSAGELIST {
   templateUrl: 'lobby.html',
 })
 /**
+*---------------------------------------------------
 *@desc This class will hold functions for LobbyPage
 *@prop rooms, title, inputMessage, listMessage
+*---------------------------------------------------
 */
 export class LobbyPage {
   rooms: ROOMS = <ROOMS> {};
@@ -43,12 +45,8 @@ export class LobbyPage {
     private events: Events,
     private vc: x.Videocenter) {
     this.inputMessage = '';
-    if ( this.listMessage[0] === void 0 ) {
-      this.listMessage[0] = { messages: [] };
-    }
-    //Join the Lobby room
+    if ( this.listMessage[0] === void 0 ) this.listMessage[0] = { messages: [] };
     this.joinLobby();
-    //Subscribe to events    
     this.listenEvents();
   }
   /**
@@ -56,12 +54,8 @@ export class LobbyPage {
   */
   joinLobby() {
     this.vc.joinRoom( x.LobbyRoomName, re => {
-      console.log('LobbyPage::constructor() joinRoom callback:', re); 
-      //Get username 
       this.vc.getUsername().then( username => this.title = username );
       this.getUserList();
-      
-   
     });
   }
   /**
@@ -70,7 +64,6 @@ export class LobbyPage {
   */
   getUserList() {
       this.vc.userList( '', re => {
-      console.log('LobbyPage::constructor() vc.userList callback(): ', re);
       try {
         this.showRoomList( re );
       }
@@ -79,93 +72,112 @@ export class LobbyPage {
       }
     });
   }
-  //Update  Username
+  /**
+  *@desc This method first run the getUsername then it will pass it
+  *to updateUsername method
+  */
   onClickUpdateUsername() {
     this.getUsername( username => this.updateUsername( username ) );
   }
-  //Update  Roomname
+  /**
+  *@desc This method first run the getRoomname then it will pass it
+  *to createRoom method
+  */
   onClickCreateRoom() {
     this.getRoomname( x => this.createRoom( x ) );
   }
-  //Join Room
+  /**
+  *@desc This method will pass the roomname to joinRoom method
+  *param roomname
+  */
   onClickJoinRoom( roomname ) {
     this.joinRoom( roomname );
   }
-  //For Logout
+  /**
+  *@desc This method will set the root to entrance page 
+  *after you logout on the server
+  */
   onClickLogout() {
     this.vc.logout(()=> {
       this.navCtrl.setRoot( EntrancePage );
     });    
   }
-  
+  /**
+  *@desc This method is the callback of getUsername to successfully update
+  *the username if the user input is not empty
+  *@param username 
+  */
   updateUsername( username: string ) {
-    console.log(username);
     if ( username ) {
-      this.vc.updateUsername( username, re => {
-        this.title = re.name;
-      } );
+      this.vc.updateUsername( username, re => { this.title = re.name;} );
     }
     else {     
-      let alert = this.alertCtrl.create({
-      title: 'Form Error!',
-        subTitle: 'Your username input is empty!',
-        buttons: ['OK']
-      });
+      let alert = this.alertCtrl.create({ title: 'Form Error!',
+      subTitle: 'Your username input is empty!', buttons: ['OK'] });
       alert.present();
     }
   }
+  /**
+  *@desc This method is is use to successfully
+  * create a room if the user input is not empty
+  *@param roomname 
+  */
   onJoinRoom( roomname ) {
     if( roomname != x.LobbyRoomName ) {    
       this.vc.setConfig('roomname', roomname);
       this.joinRoom( roomname );
     }
     else {
-      let alert = this.alertCtrl.create({
-      title: 'Error!',
-        subTitle: 'You cant join the Lobby!',
-        buttons: ['OK']
-      });
+      let alert = this.alertCtrl.create({ title: 'Error!',
+      subTitle: 'You can\'t join the Lobby!', buttons: ['OK'] });
       alert.present();
     }
   }
-  //Send Message  
+  /**
+  *@desc This method will send the message to the server
+  *after that it will empty the message input box
+  *@param message 
+  */  
   onSendMessage(message: string) {
-    if(message != ""){
-      this.vc.sendMessage(message, ()=> {
-        this.inputMessage = '';             
-      });
-    }
+    if(message != "") this.vc.sendMessage(message, ()=> { 
+      this.inputMessage = ''; 
+    });
   }
-  //Show Room List
+  /**
+  *@desc This method will loop through all the users and
+  *and display it
+  *@param re
+  */
   showRoomList( users: { (key: string) : Array<x.USER> } ) {
-    console.log( 'LobbyPage::showRoomList() users: ', users );
     for ( let socket_id in users ) {
       let user: x.USER = users[socket_id];
       if(!user.room) continue;
       let room_id = <string> this.vc.md5( user.room );   
-      if ( this.rooms[ room_id ] === void 0 ) this.rooms[ room_id ] = { name: user.room, users: [] };
-      let usr = this.rooms[ room_id ].users; 
-      for(let i in usr) { 
-          if( usr[i].socket === user.socket) {
-            this.rooms[ room_id ].users.splice(i, 1);
-          }        
-        }  
+      if ( this.rooms[ room_id ] === void 0 ) this.initRoomOnRoomList( user );
+      let myuser = this.rooms[ room_id ].users; 
+      this.userSpliceList(user, myuser );  
       this.rooms[ room_id ].users.push( user );    
     }
   }
-  //Add userlist inside roomlist
+  /**
+  *@desc This method will add user in roomlist
+  *@param re
+  */
   addUserList( re ) {
-    console.log("Add user List");  
     let user: x.USER = re[0];       
     let room_id = this.vc.md5( user.room );
-    if ( this.rooms[ room_id ] === void 0 ) this.rooms[ room_id ] = { name: user.room, users: [] };      
+    if ( this.rooms[ room_id ] === void 0 ) this.initRoomOnRoomList( user );      
     this.rooms[ room_id ].users.push( user );
   }
-  //update user on userlist
+  /**
+  *@desc This method will find a match on the given paramter 
+  *and update it
+  *@param re
+  */
   updateUserOnUserList( re ) {  
     let user: x.USER = re[0];   
     let room_id = this.vc.md5( user.room );   
-    if ( this.rooms[ room_id ] === void 0 ) this.rooms[ room_id ] = { name: user.room, users: [] };   
+    if ( this.rooms[ room_id ] === void 0 ) this.initRoomOnRoomList( user );
     let users = this.rooms[ room_id ].users;        
     for(let i in users) { 
       if( users[i].socket === user.socket) {
@@ -174,174 +186,197 @@ export class LobbyPage {
       }          
     }    
   }
-  //Remove userlist
+  /**
+  *@desc This method will initialize rooms
+  *if it's not yet initialized
+  *@param user
+  */
+  initRoomOnRoomList( user ) {
+    let room_id = this.vc.md5( user.room );   
+    this.rooms[ room_id ] = { name: user.room, users: [] };   
+  }
+  /**
+  *@desc This method will run the userSpliceList
+  *@param re
+  */
   removeUserList( re ) {  
     let user: x.USER = re[0];
     for ( let room_id in this.rooms ) {
       let users = this.rooms[ room_id ].users;      
-      if ( users.length ) {
-        for( let i in users ) {
-          if ( users[i].socket == user.socket ) {
-              users.splice( i, 1 );
-          }
-        }
-      }
+      this.userSpliceList(user, users );
     }  
   }
+  /**
+  *@desc This method will find a match on the given paramter 
+  *and splice it
+  *@param user, users
+  */
+  userSpliceList( user, users ) {
+    if ( users.length ) {
+      for( let i in users ) {
+        if ( users[i].socket == user.socket ) {
+            users.splice( i, 1 );
+        }
+      }
+    }
+  }
+  /**
+  *@desc This method is use in the view to list all the roomids
+  *@example *ngFor = " let id of roomIds "
+  */
   get roomIds () {
     return Object.keys( this.rooms );
   }    
   
   /**
-   * Gets username from user keyboard input.
-   */
+  *@desc This method will get the username input by using AlertController
+  *and will pass it to updateUsername method 
+  *@param callback
+  */
   getUsername( callback ) {
     
-    let prompt = this.alertCtrl.create({
-      title: 'Update Username',
+    let prompt = this.alertCtrl.create({title: 'Update Username',
       message: "Enter a username to update your username",
-      inputs: [
-        {
-          name: 'username',
-          placeholder: 'Update Username'
-        },
-      ],
-      buttons: [        
-        {
-          text: 'Cancel',
-          handler: data => {
-            console.log('Cancel clicked');
-          }
-        },
-        {
-          text: 'Update',
-          handler: data => {
-            console.log('Update Username clicked');
-            callback( data.username );
-          }
-        }        
-      ]
-    });
+      inputs: [{ name: 'username', placeholder: 'Update Username'},],
+      buttons: [{text: 'Cancel', handler: data => {}},
+      {text: 'Update', handler: data => { callback( data.username );
+    }}]});
     prompt.present();
   }
 
   /**
-   * Create a chat room
-   */
+  *@desc This method will get the roomname input by using AlertController
+  *and will pass it to createRoom method 
+  *@param callback
+  */
   getRoomname( callback ) {
-    let prompt = this.alertCtrl.create({
-      title: 'Create Room',
+    let prompt = this.alertCtrl.create({title: 'Create Room',
       message: "Enter a roomname to create a new room",
-      inputs: [
-        {
-          name: 'roomname',
-          placeholder: 'Create Room'
-        },
-      ],
-      buttons: [        
-        {
-          text: 'Cancel',
-          handler: data => {
-            console.log('Cancel clicked');
-          }
-        },
-        {
-          text: 'Create',
-          handler: data => {
-            console.log('Create Room clicked',data);
-            callback ( data.roomname );
-          }
-        }        
-      ]
-    });
+      inputs: [{ name: 'roomname', placeholder: 'Create Room' },],
+      buttons: [{ text: 'Cancel', handler: data => { }},
+      { text: 'Create', handler: data => { callback ( data.roomname ); 
+    }}]});
     prompt.present();
   }
-  //For join message
-  joinMessage( re ){
-    let message = { name: re[0].name, message: ' joins into ' + re[0].room };
+  /**
+   *@desc This method will create a join message variable that
+   *will be pass in addMessage
+   *@param data 
+   */  
+  joinMessage( data ){
+    let message = { name: data[0].name, message: ' joins into ' + data[0].room };
     this.addMessage( message ); 
   }
-  //For disconnect message
-  disconnectMessage( re ){
-    if( re[0].room ){
-      let message = { name: re[0].name, message: ' disconnect into ' + re[0].room };
+  /**
+   *@desc This method will create a disconnect message variable that
+   *will be pass in addMessage
+   *@param data 
+   */ 
+  disconnectMessage( data ){
+    if( data[0].room ){
+      let message = { name: data[0].name, message: ' disconnect into ' + data[0].room };
       this.addMessage( message );
     } 
   }
-  //Add to listMessage to be displayed in the view   
+  /**
+   *@desc Add to listMessage to be displayed in the view
+   *@param message 
+   */  
   addMessage( message ) {     
     this.listMessage[0].messages.push( message );
     setTimeout(()=>{ this.events.publish( 'scroll-to-bottom' ); }, 100); 
   }
-  //Set roomname in storage then go to roompage
   joinRoom( roomname ) {  
-    console.log( 'joinRoom(): ', roomname);
     this.vc.setConfig('roomname', roomname)
-      .then( () => {
-        this.unListenEvents(); // unsubscribe events before join the room.
-        this.navCtrl.setRoot( RoomPage );  
-      });
-    
+    .then( () => {
+      this.unListenEvents(); 
+      this.navCtrl.setRoot( RoomPage );  
+    });
   }
-  //Create Room
+  /**
+  *@desc This method will createroom in the server then 
+  *invoke the joinRoom callback
+  *@param roomname
+  */
   createRoom( roomname ) {
-    this.vc.createRoom( roomname, (re) => {
-      this.joinRoom( roomname );
+    this.vc.createRoom( roomname, ( room ) => {
+      this.joinRoom( room );
     });
   }
-   /**
-   * 
-   * Ionic Life Cycle
-   * 
-   */
-   //Called after first Ngonchanges
- 
-   //Run if the page is no more display
-   ionViewWillLeave() {
-     console.log('LobbyPage::ionViewWillLeave()');
-   }
-   /**
-   * 
-   * Ionic Subscribe and Unsubscribe
-   * 
-   */
+  /**
+  *-------------------------------------
+  *@desc Ionic Subscribe and Unsubscribe
+  *-------------------------------------
+  */
   
-  //Subscribe events
+  /**
+   *@desc This method subscribes to events
+   */
   listenEvents() {
-    console.log("Nakikinig ako");
+    console.log("listenEvents");
+    this.listenEventUpdateUsername(); 
+    this.listenEventJoinRoom(); 
+    this.listenEventLeaveRoom(); 
+    this.listenEventChatMessage(); 
+    this.listenEventLogout(); 
+    this.listenEventDisconnect(); 
+  }
+  /**
+   * @desc event listener for UpdateUsername
+   */
+  listenEventUpdateUsername() {
     this.events.subscribe( 'update-username', re => {
-      console.log("LobbyPage::listenEvents() => One user updated his name: ", re );   
       this.updateUserOnUserList(re);
-    });    
+    }); 
+  }
+  /**
+   * @desc event listener for JoinRoom
+   */
+  listenEventJoinRoom() {
     this.events.subscribe( 'join-room', re => {
-      console.log("LobbyPage::listenEvents() => someone joins the room: ", re );        
-      this.removeUserList(re);// Remove User
-      this.addUserList(re);// Add User
+      this.removeUserList(re);
+      this.addUserList(re);
       this.joinMessage( re );       
-        
     });
+  }
+  /**
+   * @desc event listener for LeaveRoom
+   */
+  listenEventLeaveRoom() {
     this.events.subscribe( 'leave-room', room => {
-      console.log("LobbyPage::listenEvents() => someone leaves the room: ", room );  
       let room_id = this.vc.md5( room[0] );    
       delete this.rooms[ room_id ];      
     });
-    this.events.subscribe( 'log-out', re => {
-      console.log("LobbyPage::listenEvents() => someone logout the room: ", re );
-      this.removeUserList(re);    
-    });
-    this.events.subscribe( 'disconnect', re => {
-      console.log("LobbyPage::listenEvents() => someone disconnect the room: ", re );
-      this.removeUserList(re);
-      this.disconnectMessage( re );     
-    });
-    
+  }
+  /**
+   * @desc event listener for ChatMessage
+   */
+  listenEventChatMessage() {
     this.events.subscribe( 'chatMessage', re => {
-      console.log("LobbyPage::listenEvents() => One user receive message: ", re );
       let message = re[0];
       this.addMessage( message );             
     });
   }
-  //Unsubscribe events
+  /**
+   * @desc event listener for logout
+   */
+  listenEventLogout() {
+    this.events.subscribe( 'log-out', re => {
+      this.removeUserList(re);    
+    });
+  }
+  /**
+   * @desc event listener for disconnect
+   */
+  listenEventDisconnect() {
+    this.events.subscribe( 'disconnect', re => {
+      this.removeUserList(re);
+      this.disconnectMessage( re );     
+    });
+  }
+  /**
+   *@desc This method unsubscribes to events
+   */
   unListenEvents() {
     console.log("unListenEvents()");
     this.events.unsubscribe('update-username', null );

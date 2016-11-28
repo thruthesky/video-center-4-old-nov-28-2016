@@ -8,8 +8,10 @@ import * as x from '../../providers/videocenter';
   templateUrl: 'entrance.html'
 })
 /**
+*-----------------------------------------------------
 *@desc This class will hold functions for EntrancePage
 *@method onClickSignin()
+*-----------------------------------------------------
 */
 export class EntrancePage {
   username: string; 

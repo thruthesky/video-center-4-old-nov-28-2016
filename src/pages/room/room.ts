@@ -2,7 +2,8 @@ import { Component } from '@angular/core';
 import * as x from '../../providers/videocenter';
 import { Post } from '../../fireframe2/post';
 import { Data } from '../../fireframe2/data';
-import { Platform, NavController, NavParams, AlertController, ActionSheetController, Events } from 'ionic-angular';
+import { Platform, NavController, NavParams,  AlertController, 
+ActionSheetController, Events } from 'ionic-angular';
 /**
 *@desc Interface use for listMessage Object 
 *@prop messages
@@ -42,6 +43,7 @@ export class RoomPage {
   optionDrawColor:any;
   selectDrawSize:any;
   selectDrawColor:any;
+  canvasPhoto: string = "x-assets/1.png";
   video_url:any;
   audios:any = [];
   videos:any = [];
@@ -59,7 +61,6 @@ export class RoomPage {
   cordova: boolean = false;
   posts = [];
   noMorePost: boolean = false;
-  canvasPhoto: string = "x-assets/1.png";
   firstChangeVideo:boolean = false;
   firstChangeAudio:boolean = false;
   private connection = null;
@@ -130,9 +131,9 @@ export class RoomPage {
     this.connection.openOrJoin( roomName, (roomExist) => {
       if(roomExist)console.log("I Join the Room");
       else console.log("I Open the Room");
-      this.connection.socket.on(this.connection.socketCustomEvent, message => { } );
+      this.connection.socket.on( this.connection.socketCustomEvent, message => { } );
       let msg = this.connection.userid;
-      this.connection.socket.emit(this.connection.socketCustomEvent, msg);
+      this.connection.socket.emit( this.connection.socketCustomEvent, msg);
     });
   }
   /**
@@ -241,35 +242,14 @@ export class RoomPage {
   showMiscellaneous() {
     let actionSheet = this.actionSheetCtrl.create({
       title: 'Miscellaneous',
-      buttons: [
-        {
-          text: 'Settings',
-          icon: 'settings',
-          handler: () => {
-            this.settings = ! this.settings;
-          }
-        },{
-          text: 'Chat',
-          icon: 'md-chatboxes',
-          handler: () => {
-            this.chatDisplay = ! this.chatDisplay;
-          }
-        },{
-          text: 'Document',
-          icon: 'ios-images',
-          handler: () => {
-            this.documentDisplay = ! this.documentDisplay;
-          }
-        },{
-          text: 'Cancel',
-          role: 'cancel',
-          icon: 'md-close',
-          handler: () => {
-            console.log('Cancel clicked');
-          }
-        }
-      ]
-    });
+      buttons: [{text: 'Settings', icon: 'settings',
+      handler: () => { this.settings = ! this.settings; }},
+      { text: 'Chat', icon: 'md-chatboxes',
+      handler: () => { this.chatDisplay = ! this.chatDisplay; }},
+      { text: 'Document', icon: 'ios-images',
+      handler: () => { this.documentDisplay = ! this.documentDisplay; }},
+      { text: 'Cancel', role: 'cancel', icon: 'md-close',
+      handler: () => { console.log('Cancel clicked'); }}]});
     actionSheet.present();
   }
   
@@ -277,8 +257,7 @@ export class RoomPage {
    *@desc This method will Leave the room and go back to lobby
    */
   onClickLobby() {
-    let random = this.vc.getRandomInt(0,500);
-    setTimeout( ()=> { this.vc.setConfig('roomname', x.LobbyRoomName ); }, random);
+    this.vc.setConfig('roomname', x.LobbyRoomName ); 
     location.reload();
   }
   /**
@@ -318,7 +297,9 @@ export class RoomPage {
   */
   videoSelectedAlready( videoSourceId ) {
     let result = 0;
-    if(this.connection.mediaConstraints.video.optional.length && this.connection.attachStreams.length) {
+    let videoOptionalLength = this.connection.mediaConstraints.video.optional.length;
+    let attachStreamsLength = this.connection.attachStreams.length;
+    if( videoOptionalLength && attachStreamsLength ) {
       if(this.connection.mediaConstraints.video.optional[0].sourceId === videoSourceId) {
           alert('Selected video device is already selected.');
           result = 1;
@@ -369,7 +350,9 @@ export class RoomPage {
   */
   audioSelectedAlready( audioSourceId ) {
     let result = 0;
-    if(this.connection.mediaConstraints.audio.optional.length && this.connection.attachStreams.length) {
+    let attachStreamsLength = this.connection.attachStreams.length;
+    let audioOptionalLength = this.connection.mediaConstraints.audio.optional.length;
+    if( audioOptionalLength && attachStreamsLength) {
       if(this.connection.mediaConstraints.audio.optional[0].sourceId === audioSourceId) {
           alert('Selected audio device is already selected.');
           result = 1;
@@ -406,7 +389,8 @@ export class RoomPage {
     }
   }
   /**
-   *@desc This method will Change the canvas image after clicking the preview image inside document
+   *@desc This method will Change the canvas image 
+   *after clicking the preview image inside document
    */
   onClickPhoto() {
     this.vc.getRoomname().then( roomname => {
@@ -487,7 +471,9 @@ export class RoomPage {
 
 
   /**
+   *-------------------------------------
    *@desc Ionic Subscribe and Unsubscribe
+   *-------------------------------------
    */
   
   /**
@@ -510,7 +496,6 @@ export class RoomPage {
    */
   listenEventJoinRoom() {
     this.events.subscribe( 'join-room', re => {
-      console.log("RoomPage::listenEvents() => someone joins the room: ", re );          
       let message = { name: re[0].name, message: ' joins into ' + re[0].room };
       this.addMessage( message );
     });  
@@ -520,7 +505,6 @@ export class RoomPage {
    */
   listenEventChatMessage() {
     this.events.subscribe( 'chatMessage', re => {
-      console.log("RoomPage::listenEvents() => One user receive message: ", re ); 
       let message = re[0];
       this.addMessage( message );         
     });
@@ -531,7 +515,6 @@ export class RoomPage {
   listenEventWhiteboard() {
     this.events.subscribe( 'whiteboard', re => {
       let data = re[0];
-      console.log("RoomPage::listenEvents() =>Whiteboard: ", data );
       if ( data.command == 'image' ) {
           this.changeCanvasPhoto(data.image);
       }
@@ -543,7 +526,7 @@ export class RoomPage {
   listenEventRoomCast() {
     this.events.subscribe( 'room-cast', re => {
       let data = re[0];
-      console.log("RoomPage::listenEvents() => Someone roomcast inside the room: ", data );
+      console.log(data);
     });
   }
   /**
@@ -551,10 +534,12 @@ export class RoomPage {
    */
   listenEventDisconnect() {
     this.events.subscribe( 'disconnect', re => {
-      console.log("RoomPage::listenEvents() => someone disconnect the room: ", re );
       let message = { name: re[0].name, message: ' disconnect into ' + re[0].room };
       this.addMessage( message );
-      location.reload();
+      let random = this.vc.getRandomInt(0,500);
+      setTimeout( ()=> { 
+        this.vc.setConfig('roomname', x.LobbyRoomName ); 
+        location.reload(); }, random);
     }); 
   }
   /**
